@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import br.com.ludibox.model.enums.EnumPerfil;
 import br.com.ludibox.model.enums.EnumStatus;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -18,10 +19,14 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
+
 
 @Entity
 @Data
+@Table
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Usuario {
 	
@@ -30,10 +35,14 @@ public class Usuario {
 	private Integer id;
 	
 	@Email
+	@NotBlank(message = "Email é obrigatório")
 	private String email;
 	
 	private String telefone;
 	
+	@NotBlank(message = "Senha é obrigatória")
+	@Size(min = 5)
+	@Column(length = 4000)
 	private String senha;
 	
 	@JsonBackReference
@@ -48,7 +57,7 @@ public class Usuario {
 	
 	@PrePersist
 		protected void onCreate() {
-			situacao = situacao.ATIVO;
+			situacao = EnumStatus.ATIVO;
 	}
 	
 	

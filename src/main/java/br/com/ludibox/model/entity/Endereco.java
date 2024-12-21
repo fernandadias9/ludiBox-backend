@@ -7,6 +7,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Entity
@@ -24,7 +26,8 @@ public class Endereco {
 	
 	private String nomeEndereco;
 	
-	private int cep;
+	@NotNull(message = "CEP é obrigatório")
+	private Integer cep;
 	
 	private int numero;
 	
