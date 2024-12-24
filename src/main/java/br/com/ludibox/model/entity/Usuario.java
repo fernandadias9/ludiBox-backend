@@ -1,66 +1,40 @@
 package br.com.ludibox.model.entity;
 
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
-
 import br.com.ludibox.model.enums.EnumPerfil;
 import br.com.ludibox.model.enums.EnumStatus;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.InheritanceType;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.List;
 
-@Entity
 @Data
-@Table
-@Inheritance(strategy = InheritanceType.JOINED)
-public class Usuario {
-	
-	@Id 
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+@MappedSuperclass
+public abstract class Usuario {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "shared_seq")
+	@SequenceGenerator(name = "shared_seq", sequenceName = "shared_seq", allocationSize = 1)
 	private Integer id;
-	
+
 	@Email
 	@NotBlank(message = "Email é obrigatório")
 	private String email;
-	
+
 	private String telefone;
-	
+
 	@NotBlank(message = "Senha é obrigatória")
 	@Size(min = 5)
 	@Column(length = 4000)
 	private String senha;
-	
-	@JsonBackReference
-	@OneToMany(mappedBy = "usuario")
-	private List<Endereco> enderecos;
-	
+
 	@Enumerated(EnumType.STRING)
 	private EnumStatus situacao;
-	
+
 	@Enumerated(EnumType.STRING)
 	private EnumPerfil perfil;
-	
-	@PrePersist
-		protected void onCreate() {
-			situacao = EnumStatus.ATIVO;
-	}
-	
-	
-	
-
 }
+
