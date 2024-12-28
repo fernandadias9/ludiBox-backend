@@ -7,7 +7,8 @@ import org.springframework.stereotype.Repository;
 import br.com.ludibox.model.entity.Endereco;
 
 @Repository
-public interface EnderecoRepository extends
+public interface EnderecoRepository extends 
 	JpaRepository<Endereco, Integer>, JpaSpecificationExecutor<Endereco>{
+	
 
 }

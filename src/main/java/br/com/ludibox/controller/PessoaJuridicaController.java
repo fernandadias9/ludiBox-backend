@@ -1,5 +1,6 @@
 package br.com.ludibox.controller;
 
+import br.com.ludibox.exception.LudiBoxException;
 import br.com.ludibox.model.entity.PessoaJuridica;
 import br.com.ludibox.service.PessoaJuridicaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,7 @@ public class PessoaJuridicaController {
     private PessoaJuridicaService service;
 
     @PostMapping
-    public ResponseEntity<PessoaJuridica> salvar(@RequestBody PessoaJuridica pessoaJuridica) {
+    public ResponseEntity<PessoaJuridica> salvar(@RequestBody PessoaJuridica pessoaJuridica) throws LudiBoxException {
         return ResponseEntity.ok(service.salvar(pessoaJuridica));
     }
 }

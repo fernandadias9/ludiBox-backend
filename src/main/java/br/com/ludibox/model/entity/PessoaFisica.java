@@ -8,7 +8,9 @@ import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.br.CPF;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -34,4 +36,10 @@ public class PessoaFisica extends Usuario{
 	@CPF
 	@NotBlank(message = "CPF é obrigatório")
 	private String cpf;
+	
+	@JsonBackReference
+	@OneToMany(mappedBy = "pessoaFisica", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Endereco> enderecos;
+	
+	
 }

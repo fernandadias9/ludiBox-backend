@@ -8,6 +8,9 @@ import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.br.CNPJ;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -25,5 +28,11 @@ public class PessoaJuridica extends Usuario{
 	@CNPJ
 	@NotBlank(message = "CNPJ é obrigatório")
 	private String cnpj;
+	
+	@JsonBackReference
+	@OneToMany(mappedBy = "pessoaJuridica", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Endereco> enderecos;
+	
+	
 
 }
