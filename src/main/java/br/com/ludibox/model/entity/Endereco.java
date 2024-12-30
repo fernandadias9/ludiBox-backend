@@ -19,8 +19,7 @@ import lombok.Data;
 public class Endereco {
 		
 		@Id
-		@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "shared_seq")
-		@SequenceGenerator(name = "shared_seq", sequenceName = "shared_seq", allocationSize = 1)
+		@GeneratedValue(strategy = GenerationType.IDENTITY)
 		private Integer id;
 		
 		@NotBlank(message = "Nome do endereço é obrigatório")

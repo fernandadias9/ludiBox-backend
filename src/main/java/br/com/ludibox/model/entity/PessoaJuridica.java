@@ -30,7 +30,7 @@ public class PessoaJuridica extends Usuario{
 	private String cnpj;
 	
 	@JsonBackReference
-	@OneToMany(mappedBy = "pessoaJuridica", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "pessoaJuridica")
     private List<Endereco> enderecos;
 	
 	

@@ -38,7 +38,7 @@ public class PessoaFisica extends Usuario{
 	private String cpf;
 	
 	@JsonBackReference
-	@OneToMany(mappedBy = "pessoaFisica", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "pessoaFisica")
     private List<Endereco> enderecos;
 	
 	
