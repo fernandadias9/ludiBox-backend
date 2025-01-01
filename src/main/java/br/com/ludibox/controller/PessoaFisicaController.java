@@ -21,9 +21,24 @@ public class PessoaFisicaController {
         return ResponseEntity.ok(service.salvar(pessoaFisica));
     }
     
-    @PutMapping
+    @PutMapping("/atualizar")
     public ResponseEntity<PessoaFisica> atualizarPf(@RequestBody PessoaFisica pessoaFisica) throws LudiBoxException {
         return ResponseEntity.ok(service.atualizarDados(pessoaFisica));
+    }
+    
+    @PutMapping("/desativar")
+    public void desativarPessoaFisica(@RequestBody PessoaFisica pessoaFisica) throws LudiBoxException {
+        service.desativarPessoaFisica(pessoaFisica);
+    }
+    
+    @PutMapping("/reativar")
+    public void reativarPessoaFisica(@RequestBody PessoaFisica pessoaFisica) throws LudiBoxException {
+        service.reativarPessoaFisica(pessoaFisica);
+    }
+    
+    @PutMapping("/bloquear")
+    public void bloquearPessoaFisica(@RequestBody PessoaFisica pessoaFisica) throws LudiBoxException {
+        service.bloquearPessoaFisica(pessoaFisica);
     }
     
     @GetMapping

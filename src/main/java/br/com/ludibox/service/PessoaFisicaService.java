@@ -3,6 +3,8 @@ package br.com.ludibox.service;
 import br.com.ludibox.exception.LudiBoxException;
 import br.com.ludibox.model.entity.PessoaFisica;
 import br.com.ludibox.model.entity.PessoaJuridica;
+import br.com.ludibox.model.enums.EnumPerfil;
+import br.com.ludibox.model.enums.EnumStatus;
 import br.com.ludibox.model.repository.PessoaFisicaRepository;
 import br.com.ludibox.model.repository.PessoaJuridicaRepository;
 
@@ -29,10 +31,27 @@ public class PessoaFisicaService {
 		return pessoaFisicaRepository.findAll();
     }
     
-    
     public PessoaFisica atualizarDados(PessoaFisica pessoaFisica) throws LudiBoxException{
     	verificarDados(pessoaFisica);
     	return pessoaFisicaRepository.save(pessoaFisica);
+    }
+    
+    public void desativarPessoaFisica(PessoaFisica pessoaFisica) throws LudiBoxException{
+    	PessoaFisica pessoa = pessoaFisicaRepository.findById(pessoaFisica.getId()).get();
+    	pessoa.setSituacao(EnumStatus.INATIVO);
+    	pessoaFisicaRepository.save(pessoa);
+    }
+    
+    public void reativarPessoaFisica(PessoaFisica pessoaFisica) throws LudiBoxException{
+    	PessoaFisica pessoa = pessoaFisicaRepository.findById(pessoaFisica.getId()).get();
+    	pessoa.setSituacao(EnumStatus.ATIVO);
+    	pessoaFisicaRepository.save(pessoa);
+    }
+    
+    public void bloquearPessoaFisica(PessoaFisica pessoaFisica) throws LudiBoxException{
+    	PessoaFisica pessoa = pessoaFisicaRepository.findById(pessoaFisica.getId()).get();
+    	pessoa.setSituacao(EnumStatus.BLOQUEADO);
+    	pessoaFisicaRepository.save(pessoa);
     }
     
     private void verificarDados(PessoaFisica pessoaFisica) throws LudiBoxException {
@@ -72,5 +91,6 @@ public class PessoaFisicaService {
     	
     }
     
-   
+	
+	
 }

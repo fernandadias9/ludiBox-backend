@@ -28,6 +28,21 @@ public class PessoaJuridicaController {
         return ResponseEntity.ok(service.atualizarDados(pessoaJuridica));
     }
     
+    @PutMapping("/desativar")
+    public void desativarPessoaJuridica(@RequestBody PessoaJuridica pessoaJuridica) throws LudiBoxException {
+        service.desativarPessoaJuridica(pessoaJuridica);
+    }
+    
+    @PutMapping("/reativar")
+    public void reativarPessoaJuridica(@RequestBody PessoaJuridica pessoaJuridica) throws LudiBoxException {
+        service.reativarPessoaJuridica(pessoaJuridica);
+    }
+    
+    @PutMapping("/bloquear")
+    public void bloquearPessoaJuridica(@RequestBody PessoaJuridica pessoaJuridica) throws LudiBoxException {
+        service.bloquearPessoaJuridica(pessoaJuridica);
+    }
+    
     @GetMapping
     public List<PessoaJuridica> buscarTodosPj(){
     	List<PessoaJuridica> pessoas = service.buscarTodosPj();

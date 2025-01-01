@@ -3,6 +3,7 @@ package br.com.ludibox.service;
 import br.com.ludibox.exception.LudiBoxException;
 import br.com.ludibox.model.entity.PessoaFisica;
 import br.com.ludibox.model.entity.PessoaJuridica;
+import br.com.ludibox.model.enums.EnumStatus;
 import br.com.ludibox.model.repository.PessoaFisicaRepository;
 import br.com.ludibox.model.repository.PessoaJuridicaRepository;
 
@@ -28,6 +29,27 @@ public class PessoaJuridicaService {
     public PessoaJuridica atualizarDados(PessoaJuridica pessoaJuridica) throws LudiBoxException{
     	verificarDados(pessoaJuridica);
     	return pessoaJuridicaRepository.save(pessoaJuridica);
+    }
+    
+    
+    public void desativarPessoaJuridica(PessoaJuridica pessoaJuridica) throws LudiBoxException{
+    	PessoaJuridica pessoa = pessoaJuridicaRepository.findById(pessoaJuridica.getId()).get();
+    	pessoa.setSituacao(EnumStatus.INATIVO);
+    	pessoaJuridicaRepository.save(pessoa);
+    }
+    
+    
+    public void reativarPessoaJuridica(PessoaJuridica pessoaJuridica) throws LudiBoxException{
+    	PessoaJuridica pessoa = pessoaJuridicaRepository.findById(pessoaJuridica.getId()).get();
+    	pessoa.setSituacao(EnumStatus.ATIVO);
+    	pessoaJuridicaRepository.save(pessoa);
+    }
+    
+    
+    public void bloquearPessoaJuridica(PessoaJuridica pessoaJuridica) throws LudiBoxException{
+    	PessoaJuridica pessoa = pessoaJuridicaRepository.findById(pessoaJuridica.getId()).get();
+    	pessoa.setSituacao(EnumStatus.BLOQUEADO);
+    	pessoaJuridicaRepository.save(pessoa);
     }
     
     public List<PessoaJuridica> buscarTodosPj(){
