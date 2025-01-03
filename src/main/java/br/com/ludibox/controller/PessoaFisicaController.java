@@ -15,11 +15,6 @@ public class PessoaFisicaController {
 
     @Autowired
     private PessoaFisicaService service;
-
-    @PostMapping
-    public ResponseEntity<PessoaFisica> salvar(@RequestBody PessoaFisica pessoaFisica) throws LudiBoxException {
-        return ResponseEntity.ok(service.salvar(pessoaFisica));
-    }
     
     @PutMapping("/atualizar")
     public ResponseEntity<PessoaFisica> atualizarPf(@RequestBody PessoaFisica pessoaFisica) throws LudiBoxException {
@@ -42,7 +37,7 @@ public class PessoaFisicaController {
     }
     
     @GetMapping
-	public List<PessoaFisica> buscarTodosPf(){
+	public List<PessoaFisica> buscarTodosPf() throws LudiBoxException{
 		List<PessoaFisica> pessoas = service.buscarTodosPf();
 		return pessoas;
 	}

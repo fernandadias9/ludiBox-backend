@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import br.com.ludibox.model.entity.PessoaFisica;
 
 @Repository
-public interface PessoaFisicaRepository extends
+	public interface PessoaFisicaRepository extends
 	JpaRepository<PessoaFisica, Integer>, JpaSpecificationExecutor<PessoaFisica>{
 
 	Optional<PessoaFisica> findByEmail(String email);

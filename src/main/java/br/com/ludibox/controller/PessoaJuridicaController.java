@@ -18,11 +18,6 @@ public class PessoaJuridicaController {
     @Autowired
     private PessoaJuridicaService service;
 
-    @PostMapping
-    public ResponseEntity<PessoaJuridica> salvar(@RequestBody PessoaJuridica pessoaJuridica) throws LudiBoxException {
-        return ResponseEntity.ok(service.salvar(pessoaJuridica));
-    }
-    
     @PutMapping
     public ResponseEntity<PessoaJuridica> atualizarPj(@RequestBody PessoaJuridica pessoaJuridica) throws LudiBoxException {
         return ResponseEntity.ok(service.atualizarDados(pessoaJuridica));
@@ -44,7 +39,7 @@ public class PessoaJuridicaController {
     }
     
     @GetMapping
-    public List<PessoaJuridica> buscarTodosPj(){
+    public List<PessoaJuridica> buscarTodosPj() throws LudiBoxException{
     	List<PessoaJuridica> pessoas = service.buscarTodosPj();
     	return pessoas;
     }

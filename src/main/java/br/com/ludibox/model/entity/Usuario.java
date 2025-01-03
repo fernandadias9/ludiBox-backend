@@ -9,11 +9,16 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Data
 @MappedSuperclass
-public abstract class Usuario {
+public abstract class Usuario implements UserDetails{
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "shared_seq")
@@ -36,5 +41,28 @@ public abstract class Usuario {
 
 	@Enumerated(EnumType.STRING)
 	private EnumPerfil perfil;
+	
+	@Override
+	public java.util.Collection<? extends GrantedAuthority> getAuthorities() {
+		List<GrantedAuthority> list = new ArrayList<GrantedAuthority>();
+		
+		list.add(new SimpleGrantedAuthority(perfil.toString()));
+		
+		return list;
+	}
+
+
+	@Override
+	public String getPassword() {
+		return this.senha;
+	}
+
+
+	@Override
+	public String getUsername() {
+		return this.email;
+	}
+		
+	
 }
 

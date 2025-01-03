@@ -1,5 +1,6 @@
 package br.com.ludibox.service;
 
+import br.com.ludibox.auth.AuthenticationService;
 import br.com.ludibox.exception.LudiBoxException;
 import br.com.ludibox.model.entity.PessoaFisica;
 import br.com.ludibox.model.entity.PessoaJuridica;
@@ -11,44 +12,78 @@ import br.com.ludibox.model.repository.PessoaJuridicaRepository;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PessoaFisicaService {
+public class PessoaFisicaService  {
 
     @Autowired
     private PessoaFisicaRepository pessoaFisicaRepository;
     
     @Autowired
     private PessoaJuridicaRepository pessoaJuridicaRepository;
+    
+    @Autowired
+	private AuthenticationService authService;
 
     public PessoaFisica salvar(PessoaFisica pessoaFisica) throws LudiBoxException {
     	verificarPessoaExistente(pessoaFisica);
         return pessoaFisicaRepository.save(pessoaFisica);
     }
     
-    public List<PessoaFisica> buscarTodosPf(){    	
+    public List<PessoaFisica> buscarTodosPf() throws LudiBoxException{    	
+    	PessoaFisica pfAutenticada = authService.getPessoaFisicaAutenticada();
+    	
+    	if (pfAutenticada.getPerfil() == EnumPerfil.USUARIO) {
+    		throw new LudiBoxException("Ação exclusiva para administradores!");
+		}
+    	
 		return pessoaFisicaRepository.findAll();
     }
     
     public PessoaFisica atualizarDados(PessoaFisica pessoaFisica) throws LudiBoxException{
+    	PessoaFisica pessoaAutenticada = authService.getPessoaFisicaAutenticada();   	
     	verificarDados(pessoaFisica);
+    	if (pessoaAutenticada.getId() != pessoaFisica.getId()) {
+			throw new LudiBoxException("Usuários só podem alterar seus próprios dados!");
+		}
     	return pessoaFisicaRepository.save(pessoaFisica);
     }
     
     public void desativarPessoaFisica(PessoaFisica pessoaFisica) throws LudiBoxException{
+    	PessoaFisica pessoaAutenticada = authService.getPessoaFisicaAutenticada();   	
+    	if (pessoaAutenticada.getId() != pessoaFisica.getId()) {
+			throw new LudiBoxException("Usuários só podem alterar seus próprios dados!");
+		}
+    	
     	PessoaFisica pessoa = pessoaFisicaRepository.findById(pessoaFisica.getId()).get();
     	pessoa.setSituacao(EnumStatus.INATIVO);
     	pessoaFisicaRepository.save(pessoa);
     }
     
     public void reativarPessoaFisica(PessoaFisica pessoaFisica) throws LudiBoxException{
+    	PessoaFisica pfAutenticada = authService.getPessoaFisicaAutenticada();
+    	
+    	if (pfAutenticada.getPerfil() == EnumPerfil.USUARIO) {
+    		throw new LudiBoxException("Ação exclusiva para administradores!");
+		}
+    	
+    	
     	PessoaFisica pessoa = pessoaFisicaRepository.findById(pessoaFisica.getId()).get();
     	pessoa.setSituacao(EnumStatus.ATIVO);
     	pessoaFisicaRepository.save(pessoa);
     }
     
     public void bloquearPessoaFisica(PessoaFisica pessoaFisica) throws LudiBoxException{
+    	PessoaFisica pfAutenticada = authService.getPessoaFisicaAutenticada();
+    	
+    	if (pfAutenticada.getPerfil() == EnumPerfil.USUARIO) {
+    		throw new LudiBoxException("Ação exclusiva para administradores!");
+		}
+    	
     	PessoaFisica pessoa = pessoaFisicaRepository.findById(pessoaFisica.getId()).get();
     	pessoa.setSituacao(EnumStatus.BLOQUEADO);
     	pessoaFisicaRepository.save(pessoa);
@@ -90,6 +125,9 @@ public class PessoaFisicaService {
 		}
     	
     }
+
+	
+
     
 	
 	

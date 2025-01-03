@@ -1,11 +1,14 @@
 package br.com.ludibox.model.entity;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.br.CPF;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -41,5 +44,25 @@ public class PessoaFisica extends Usuario{
 	@OneToMany(mappedBy = "pessoaFisica")
     private List<Endereco> enderecos;
 	
+	@Override
+	public java.util.Collection<? extends GrantedAuthority> getAuthorities() {
+		List<GrantedAuthority> list = new ArrayList<GrantedAuthority>();
+		
+		list.add(new SimpleGrantedAuthority(super.getPerfil().toString()));
+		
+		return list;
+	}
+
+
+	@Override
+	public String getPassword() {
+		return super.getSenha();
+	}
+
+
+	@Override
+	public String getUsername() {
+		return this.getEmail();
+	}
 	
 }
