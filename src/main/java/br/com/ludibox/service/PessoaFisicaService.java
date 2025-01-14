@@ -34,6 +34,15 @@ public class PessoaFisicaService  {
         return pessoaFisicaRepository.save(pessoaFisica);
     }
     
+    public PessoaFisica cadastrarAdm(PessoaFisica pessoaFisica) throws LudiBoxException{
+    	PessoaFisica pfAutenticada = authService.getPessoaFisicaAutenticada();
+    	if (pfAutenticada.getPerfil() == EnumPerfil.USUARIO) {
+    		throw new LudiBoxException("Ação exclusiva para administradores!");
+		}
+    	pessoaFisica.setPerfil(EnumPerfil.ADMINISTRADOR);
+    	return pessoaFisicaRepository.save(pessoaFisica);
+    }
+    
     public List<PessoaFisica> buscarTodosPf() throws LudiBoxException{    	
     	PessoaFisica pfAutenticada = authService.getPessoaFisicaAutenticada();
     	

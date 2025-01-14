@@ -16,6 +16,11 @@ public class PessoaFisicaController {
     @Autowired
     private PessoaFisicaService service;
     
+    @PostMapping("/cadastrar_adm")
+    public ResponseEntity<PessoaFisica> cadastrarAdm(@RequestBody  PessoaFisica pessoaFisica) throws LudiBoxException{
+    	return ResponseEntity.ok(service.cadastrarAdm(pessoaFisica));
+    }
+    
     @PutMapping("/atualizar")
     public ResponseEntity<PessoaFisica> atualizarPf(@RequestBody PessoaFisica pessoaFisica) throws LudiBoxException {
         return ResponseEntity.ok(service.atualizarDados(pessoaFisica));

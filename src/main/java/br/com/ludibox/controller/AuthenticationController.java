@@ -2,6 +2,7 @@ package br.com.ludibox.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import br.com.ludibox.model.entity.PessoaJuridica;
 import br.com.ludibox.model.enums.EnumPerfil;
 import br.com.ludibox.service.PessoaFisicaService;
 import br.com.ludibox.service.PessoaJuridicaService;
+import jakarta.validation.Valid;
 
 
 @RestController
@@ -45,9 +47,17 @@ public class AuthenticationController {
 		return authenticationService.authenticatePessoaJuridica(authentication);
 	}
 	
+	 @PostMapping("/cadastrar_adm")
+	 @ResponseStatus(code = HttpStatus.CREATED)
+	    public ResponseEntity<PessoaFisica> cadastrarAdm(@RequestBody @Valid PessoaFisica pessoaFisica) throws LudiBoxException{
+		 	String senhaCifrada = passwordEncoder.encode(pessoaFisica.getSenha());
+			pessoaFisica.setSenha(senhaCifrada);
+		 return ResponseEntity.ok(pessoaFisicaService.cadastrarAdm(pessoaFisica));
+	    }
+	
 	@PostMapping("/nova-pessoa-fisica")
 	@ResponseStatus(code = HttpStatus.CREATED) 
-	public void registrarPessoaFisica(@RequestBody PessoaFisica novaPessoaFisica) throws LudiBoxException {
+	public void registrarPessoaFisica(@RequestBody @Valid PessoaFisica novaPessoaFisica) throws LudiBoxException {
 		String senhaCifrada = passwordEncoder.encode(novaPessoaFisica.getSenha());
 		novaPessoaFisica.setSenha(senhaCifrada);
 		novaPessoaFisica.setPerfil(EnumPerfil.USUARIO);
@@ -57,7 +67,7 @@ public class AuthenticationController {
 	
 	@PostMapping("/nova-pessoa-juridica")
 	@ResponseStatus(code = HttpStatus.CREATED) 
-	public void registrarPessoaJuridica(@RequestBody PessoaJuridica novaPessoaJuridica) throws LudiBoxException {
+	public void registrarPessoaJuridica(@RequestBody @Valid PessoaJuridica novaPessoaJuridica) throws LudiBoxException {
 		String senhaCifrada = passwordEncoder.encode(novaPessoaJuridica.getSenha());
 		novaPessoaJuridica.setSenha(senhaCifrada);
 		novaPessoaJuridica.setPerfil(EnumPerfil.USUARIO);
