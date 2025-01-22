@@ -39,6 +39,7 @@ public class PessoaFisicaService  {
     	if (pfAutenticada.getPerfil() == EnumPerfil.USUARIO) {
     		throw new LudiBoxException("Ação exclusiva para administradores!");
 		}
+    	verificarPessoaExistente(pessoaFisica);
     	pessoaFisica.setPerfil(EnumPerfil.ADMINISTRADOR);
     	return pessoaFisicaRepository.save(pessoaFisica);
     }

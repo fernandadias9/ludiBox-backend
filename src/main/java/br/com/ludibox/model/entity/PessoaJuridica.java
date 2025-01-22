@@ -33,8 +33,8 @@ public class PessoaJuridica extends Usuario{
 	private String cnpj;
 	
 	@JsonBackReference
-	@OneToMany(mappedBy = "pessoaJuridica")
-    private List<Endereco> enderecos;
+	@OneToOne(mappedBy = "pessoaJuridica")
+    private Endereco endereco;
 	
 	@Override
 	public java.util.Collection<? extends GrantedAuthority> getAuthorities() {
