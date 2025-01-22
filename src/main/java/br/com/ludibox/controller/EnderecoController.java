@@ -19,9 +19,16 @@ public class EnderecoController {
 	@Autowired
 	private EnderecoService enderecoService;
 	
-	@PostMapping
-	public ResponseEntity<Endereco> salvarEndereco(@RequestBody Endereco novo) throws LudiBoxException{
-		return ResponseEntity.ok(enderecoService.salvarEndereco(novo));
+	@PostMapping("/pessoaFisica")
+	public ResponseEntity<Endereco> salvarEnderecoParaPf(@RequestBody Endereco novo) throws LudiBoxException{
+		return ResponseEntity.ok(enderecoService.salvarEnderecoParaPf(novo));
 	}
+	
+	@PostMapping("/pessoaJuridica")
+	public ResponseEntity<Endereco> salvarEnderecoParaPj(@RequestBody Endereco novo) throws LudiBoxException{
+		return ResponseEntity.ok(enderecoService.salvarEnderecoParaPj(novo));
+	}
+	
+	
 
 }

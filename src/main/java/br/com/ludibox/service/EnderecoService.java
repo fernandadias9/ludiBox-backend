@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
+import br.com.ludibox.auth.AuthenticationService;
 import br.com.ludibox.exception.LudiBoxException;
 import br.com.ludibox.model.entity.Endereco;
 import br.com.ludibox.model.entity.PessoaFisica;
@@ -24,36 +25,51 @@ public class EnderecoService {
 	@Autowired
 	private PessoaJuridicaRepository pessoaJuridicaRepository;
 	
-	public Endereco salvarEndereco(Endereco novo) throws LudiBoxException {
-		validaPessoa(novo);
+	 @Autowired
+	private AuthenticationService authService;
+	
+	 
+	 
+	public Endereco salvarEnderecoParaPf(Endereco novo) throws LudiBoxException {
+			PessoaFisica pfAutenticada = authService.getPessoaFisicaAutenticada();
+			
+			validarPessoaFisica(pfAutenticada);
+			validarNumeroDePf(novo);
+			novo.setPessoaFisica(pfAutenticada);
+			pfAutenticada.getEnderecos().add(novo);
+			
+			return enderecoRepository.save(novo);
+		}
+	 
+	public Endereco salvarEnderecoParaPj(Endereco novo) throws LudiBoxException {
+		PessoaJuridica pjAutenticada = authService.getPessoaJuridicaAutenticada();
+
+		validarPessoaJuridica(pjAutenticada);
+		validarNumeroDePj(novo);
 		
+		pessoaJaPossuiEndereco(pjAutenticada);
+		
+		novo.setPessoaJuridica(pjAutenticada);
+		pjAutenticada.setEndereco(novo);
+	
 		return enderecoRepository.save(novo);
 	}
 	
-	public void validaPessoa(Endereco enderecoValidado) throws LudiBoxException {
-	    if (enderecoValidado.getPessoaFisica() != null && enderecoValidado.getPessoaJuridica() == null) {
-	        validarPessoaFisica(enderecoValidado);
-	    } else if (enderecoValidado.getPessoaJuridica() != null && enderecoValidado.getPessoaFisica() == null) {
-	        validarPessoaJuridica(enderecoValidado);
-	    } else {
-	        throw new LudiBoxException("Endereço deve estar associado somente a uma pessoa física ou jurídica!");
-	    }
+	private void pessoaJaPossuiEndereco(PessoaJuridica pjAutenticada) throws LudiBoxException {
+		if(pjAutenticada.getEndereco() != null) {
+			throw new LudiBoxException("Pessoa já possuí endereço cadastrado!");
+		}
+		
 	}
 
-	private void validarPessoaFisica(Endereco enderecoValidado) throws LudiBoxException {
-	    pessoaFisicaRepository.findById(enderecoValidado.getPessoaFisica().getId())
-	        .orElseThrow(() -> new LudiBoxException("Pessoa física com ID " + enderecoValidado.getPessoaFisica().getId() + " não encontrada!"));
-	    validarNumeroDePf(enderecoValidado);
-	    
-	    enderecoValidado.getPessoaFisica().getEnderecos().add(enderecoValidado);
+	private void validarPessoaFisica(PessoaFisica pessoaValidada) throws LudiBoxException {
+	    pessoaFisicaRepository.findById(pessoaValidada.getId())
+	        .orElseThrow(() -> new LudiBoxException("Pessoa física com ID " + pessoaValidada.getId() + " não encontrada!"));
 	}
 
-	private void validarPessoaJuridica(Endereco enderecoValidado) throws LudiBoxException {
-	    pessoaJuridicaRepository.findById(enderecoValidado.getPessoaJuridica().getId())
-	        .orElseThrow(() -> new LudiBoxException("Pessoa jurídica com ID " + enderecoValidado.getPessoaJuridica().getId() + " não encontrada!"));
-	    validarNumeroDePj(enderecoValidado);
-	    
-	    enderecoValidado.getPessoaJuridica().getEnderecos().add(enderecoValidado);
+	private void validarPessoaJuridica(PessoaJuridica pessoaValidada) throws LudiBoxException {
+	    pessoaJuridicaRepository.findById(pessoaValidada.getId())
+	        .orElseThrow(() -> new LudiBoxException("Pessoa jurídica com ID " + pessoaValidada.getId() + " não encontrada!"));
 	}
 
 	public void validarNumeroDePf(Endereco enderecoValidado) throws LudiBoxException {

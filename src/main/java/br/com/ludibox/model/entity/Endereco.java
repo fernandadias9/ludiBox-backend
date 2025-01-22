@@ -6,6 +6,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
@@ -57,7 +58,7 @@ public class Endereco {
 	    @JoinColumn(name = "pessoa_fisica_id")
 	    private PessoaFisica pessoaFisica;
 
-	    @ManyToOne
+	    @OneToOne
 	    @JoinColumn(name = "pessoa_juridica_id")
 	    private PessoaJuridica pessoaJuridica;
 	
