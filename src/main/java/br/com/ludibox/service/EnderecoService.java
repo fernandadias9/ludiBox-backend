@@ -29,7 +29,6 @@ public class EnderecoService {
 	private AuthenticationService authService;
 	
 	 
-	 
 	public Endereco salvarEnderecoParaPf(Endereco novo) throws LudiBoxException {
 			PessoaFisica pfAutenticada = authService.getPessoaFisicaAutenticada();
 			
@@ -43,23 +42,47 @@ public class EnderecoService {
 	 
 	public Endereco salvarEnderecoParaPj(Endereco novo) throws LudiBoxException {
 		PessoaJuridica pjAutenticada = authService.getPessoaJuridicaAutenticada();
+		Endereco enderecoValidado = new Endereco();
 
 		validarPessoaJuridica(pjAutenticada);
 		validarNumeroDePj(novo);
 		
-		pessoaJaPossuiEndereco(pjAutenticada);
+		enderecoValidado = pessoaJaPossuiEndereco(novo);
 		
-		novo.setPessoaJuridica(pjAutenticada);
-		pjAutenticada.setEndereco(novo);
+		enderecoValidado.setPessoaJuridica(pjAutenticada);
+		pjAutenticada.setEndereco(enderecoValidado);
 	
-		return enderecoRepository.save(novo);
+		return enderecoRepository.save(enderecoValidado);
 	}
 	
-	private void pessoaJaPossuiEndereco(PessoaJuridica pjAutenticada) throws LudiBoxException {
-		if(pjAutenticada.getEndereco() != null) {
-			throw new LudiBoxException("Pessoa já possuí endereço cadastrado!");
+	public Endereco atualizarEnderecoPf(Endereco endereco) throws LudiBoxException{
+    	PessoaFisica pessoaAutenticada = authService.getPessoaFisicaAutenticada();   	
+    	validarPessoaFisica(pessoaAutenticada);
+		validarNumeroDePf(endereco);
+    	if (pessoaAutenticada.getId() != endereco.getPessoaFisica().getId()) {
+			throw new LudiBoxException("Usuários só podem alterar seus próprios dados!");
 		}
-		
+    	return enderecoRepository.save(endereco);
+    }
+	
+	public Endereco atualizarEnderecoPj(Endereco endereco) throws LudiBoxException{
+    	PessoaJuridica pessoaAutenticada = authService.getPessoaJuridicaAutenticada();   	
+    	validarPessoaJuridica(pessoaAutenticada);
+		validarNumeroDePj(endereco);
+    	if (pessoaAutenticada.getId() != endereco.getPessoaJuridica().getId()) {
+			throw new LudiBoxException("Usuários só podem alterar seus próprios dados!");
+		}
+    	return enderecoRepository.save(endereco);
+    }
+	
+	private Endereco pessoaJaPossuiEndereco(Endereco novo) throws LudiBoxException {
+		PessoaJuridica pjAutenticada = authService.getPessoaJuridicaAutenticada();
+		Endereco existente = pjAutenticada.getEndereco();
+
+		if(existente != null) {
+			novo.setId(existente.getId());
+		}
+		return novo;
 	}
 
 	private void validarPessoaFisica(PessoaFisica pessoaValidada) throws LudiBoxException {

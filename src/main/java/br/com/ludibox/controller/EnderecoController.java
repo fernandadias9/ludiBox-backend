@@ -1,15 +1,15 @@
 package br.com.ludibox.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import br.com.ludibox.exception.LudiBoxException;
 import br.com.ludibox.model.entity.Endereco;
+import br.com.ludibox.model.entity.PessoaFisica;
 import br.com.ludibox.service.EnderecoService;
+import br.com.ludibox.service.PessoaFisicaService;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -19,15 +19,26 @@ public class EnderecoController {
 	@Autowired
 	private EnderecoService enderecoService;
 	
-	@PostMapping("/pessoaFisica")
+	@PostMapping("/add_for_Pf")
 	public ResponseEntity<Endereco> salvarEnderecoParaPf(@RequestBody Endereco novo) throws LudiBoxException{
 		return ResponseEntity.ok(enderecoService.salvarEnderecoParaPf(novo));
 	}
 	
-	@PostMapping("/pessoaJuridica")
+	@PostMapping("/add_for_Pj")
 	public ResponseEntity<Endereco> salvarEnderecoParaPj(@RequestBody Endereco novo) throws LudiBoxException{
 		return ResponseEntity.ok(enderecoService.salvarEnderecoParaPj(novo));
 	}
+	
+	@PutMapping("/update_for_Pf")
+    public ResponseEntity<Endereco> atualizarEnderecoParaPf(@RequestBody Endereco endereco) throws LudiBoxException {
+        return ResponseEntity.ok(enderecoService.atualizarEnderecoPf(endereco));
+    }
+	
+	@PutMapping("/update_for_Pj")
+    public ResponseEntity<Endereco> atualizarEnderecoParaPj(@RequestBody Endereco endereco) throws LudiBoxException {
+        return ResponseEntity.ok(enderecoService.atualizarEnderecoPj(endereco));
+    }
+    
 	
 	
 

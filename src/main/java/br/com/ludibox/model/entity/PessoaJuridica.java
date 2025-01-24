@@ -13,6 +13,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -23,6 +25,7 @@ import lombok.Data;
 @Entity
 @Table(name = "pessoa_juridica")
 public class PessoaJuridica extends Usuario{
+
 
 	@NotBlank(message = "Razão social obrigatória")
 	@Size(min = 3)
