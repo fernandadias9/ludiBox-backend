@@ -42,6 +42,10 @@ public abstract class Usuario implements UserDetails{
 	@Enumerated(EnumType.STRING)
 	private EnumPerfil perfil;
 	
+	@Column(columnDefinition = "TEXT")
+	private String imagemUsuarioEmBase64;
+	
+	
 	@Override
 	public java.util.Collection<? extends GrantedAuthority> getAuthorities() {
 		List<GrantedAuthority> list = new ArrayList<GrantedAuthority>();

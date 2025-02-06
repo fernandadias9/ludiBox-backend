@@ -10,7 +10,7 @@ import br.com.ludibox.model.entity.PessoaFisica;
 
 @Repository
 	public interface PessoaFisicaRepository extends
-	JpaRepository<PessoaFisica, Integer>, JpaSpecificationExecutor<PessoaFisica>{
+		JpaRepository<PessoaFisica, Integer>, JpaSpecificationExecutor<PessoaFisica>{
 
 	Optional<PessoaFisica> findByEmail(String email);
 	

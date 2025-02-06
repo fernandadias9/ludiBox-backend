@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class PessoaJuridicaService {
@@ -29,6 +30,19 @@ public class PessoaJuridicaService {
     @Autowired
     private AuthenticationService authService;
     
+    @Autowired
+    private ImagemService imagemService;
+    
+    
+    public void salvarImagemPessoa(MultipartFile imagem, Integer idPessoa) throws LudiBoxException {
+		
+		PessoaJuridica pessoaComImagem = pessoaJuridicaRepository.
+				findById(idPessoa)
+				.orElseThrow(() -> new LudiBoxException("Usuario não encontrado"));					
+		String imagemBase64 = imagemService.processarImagem(imagem);
+		pessoaComImagem.setImagemUsuarioEmBase64(imagemBase64);
+		pessoaJuridicaRepository.save(pessoaComImagem);
+	}
     
     public PessoaJuridica salvar(PessoaJuridica pessoaJuridica) throws LudiBoxException {
     	verificarPessoaExistente(pessoaJuridica);
