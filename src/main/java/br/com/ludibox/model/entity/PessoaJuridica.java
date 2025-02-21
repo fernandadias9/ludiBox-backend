@@ -36,7 +36,7 @@ public class PessoaJuridica extends Usuario{
 	private String cnpj;
 	
 	@JsonBackReference
-	@OneToOne(mappedBy = "pessoaJuridica")
+	@OneToOne(mappedBy = "pessoaJuridica", cascade = CascadeType.ALL)
     private Endereco endereco;
 	
 	@Override

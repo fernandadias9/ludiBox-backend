@@ -2,6 +2,7 @@ package br.com.ludibox.service;
 
 import br.com.ludibox.auth.AuthenticationService;
 import br.com.ludibox.exception.LudiBoxException;
+import br.com.ludibox.model.entity.Endereco;
 import br.com.ludibox.model.entity.PessoaFisica;
 import br.com.ludibox.model.entity.PessoaJuridica;
 import br.com.ludibox.model.enums.EnumPerfil;
@@ -32,6 +33,12 @@ public class PessoaJuridicaService {
     
     @Autowired
     private ImagemService imagemService;
+
+	@Autowired
+	private EnderecoService enderecoService;
+
+	@Autowired
+	private CepService cepService;
     
     
     public void salvarImagemPessoa(MultipartFile imagem, Integer idPessoa) throws LudiBoxException {
@@ -45,8 +52,16 @@ public class PessoaJuridicaService {
 	}
     
     public PessoaJuridica salvar(PessoaJuridica pessoaJuridica) throws LudiBoxException {
-    	verificarPessoaExistente(pessoaJuridica);
-        return pessoaJuridicaRepository.save(pessoaJuridica);
+		Endereco enderecoCepValidado = new Endereco();
+
+		enderecoCepValidado =  cepService.validarCep(pessoaJuridica.getEndereco());
+
+		pessoaJuridica.setEndereco(enderecoCepValidado);
+		enderecoCepValidado.setPessoaJuridica(pessoaJuridica);
+
+		verificarPessoaExistente(pessoaJuridica);
+
+		return pessoaJuridicaRepository.save(pessoaJuridica);
     }
     
     public PessoaJuridica atualizarDados(PessoaJuridica pessoaJuridica) throws LudiBoxException{

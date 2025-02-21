@@ -26,16 +26,26 @@ public class EnderecoService {
 	private PessoaJuridicaRepository pessoaJuridicaRepository;
 	
 	 @Autowired
-	private AuthenticationService authService;
+	 private AuthenticationService authService;
+
+	 @Autowired
+	 private CepService cepService;
+
+
 	
 	 
 	public Endereco salvarEnderecoParaPf(Endereco novo) throws LudiBoxException {
-			PessoaFisica pfAutenticada = authService.getPessoaFisicaAutenticada();
-			
-			validarPessoaFisica(pfAutenticada);
-			validarNumeroDePf(novo);
+		PessoaFisica pfAutenticada = authService.getPessoaFisicaAutenticada();
+
+		Endereco enderecoCepValidado = new Endereco();
+
+		enderecoCepValidado = cepService.validarCep(novo);
+
+
+		validarPessoaFisica(pfAutenticada);
+			validarNumeroDePf(enderecoCepValidado);
 			novo.setPessoaFisica(pfAutenticada);
-			pfAutenticada.getEnderecos().add(novo);
+			pfAutenticada.getEnderecos().add(enderecoCepValidado);
 			
 			return enderecoRepository.save(novo);
 		}
@@ -43,14 +53,18 @@ public class EnderecoService {
 	public Endereco salvarEnderecoParaPj(Endereco novo) throws LudiBoxException {
 		PessoaJuridica pjAutenticada = authService.getPessoaJuridicaAutenticada();
 		Endereco enderecoValidado = new Endereco();
+		Endereco enderecoCepValidado = new Endereco();
 
 		validarPessoaJuridica(pjAutenticada);
 		validarNumeroDePj(novo);
+
+		enderecoCepValidado = cepService.validarCep(novo);
 		
-		enderecoValidado = pessoaJaPossuiEndereco(novo);
-		
+		enderecoValidado = pessoaJaPossuiEndereco(enderecoCepValidado);
+
 		enderecoValidado.setPessoaJuridica(pjAutenticada);
 		pjAutenticada.setEndereco(enderecoValidado);
+
 	
 		return enderecoRepository.save(enderecoValidado);
 	}
@@ -75,7 +89,7 @@ public class EnderecoService {
     	return enderecoRepository.save(endereco);
     }
 	
-	private Endereco pessoaJaPossuiEndereco(Endereco novo) throws LudiBoxException {
+	public Endereco pessoaJaPossuiEndereco(Endereco novo) throws LudiBoxException {
 		PessoaJuridica pjAutenticada = authService.getPessoaJuridicaAutenticada();
 		Endereco existente = pjAutenticada.getEndereco();
 

@@ -1,8 +1,10 @@
 package br.com.ludibox.controller;
 
 import br.com.ludibox.exception.LudiBoxException;
+import br.com.ludibox.model.dto.CepDTO;
 import br.com.ludibox.model.entity.Endereco;
 import br.com.ludibox.model.entity.PessoaFisica;
+import br.com.ludibox.service.CepService;
 import br.com.ludibox.service.EnderecoService;
 import br.com.ludibox.service.PessoaFisicaService;
 import java.util.List;
@@ -18,6 +20,9 @@ public class EnderecoController {
 	
 	@Autowired
 	private EnderecoService enderecoService;
+
+	@Autowired
+	private CepService cepService;
 	
 	@PostMapping("/add_for_Pf")
 	public ResponseEntity<Endereco> salvarEnderecoParaPf(@RequestBody Endereco novo) throws LudiBoxException{
@@ -38,6 +43,12 @@ public class EnderecoController {
     public ResponseEntity<Endereco> atualizarEnderecoParaPj(@RequestBody Endereco endereco) throws LudiBoxException {
         return ResponseEntity.ok(enderecoService.atualizarEnderecoPj(endereco));
     }
+
+	@GetMapping("/buscar_por_cep/{cep}")
+	public CepDTO buscarEnderecoPorCep(@PathVariable Integer cep) throws LudiBoxException {
+		CepDTO cepDTO = cepService.buscarEnderecoPorCep(cep);
+		return cepDTO;
+	}
     
 	
 	

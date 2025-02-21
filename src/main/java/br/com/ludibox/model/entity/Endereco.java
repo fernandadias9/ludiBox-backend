@@ -1,5 +1,6 @@
 package br.com.ludibox.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -60,6 +61,7 @@ public class Endereco {
 
 	    @OneToOne
 	    @JoinColumn(name = "pessoa_juridica_id")
+		@JsonManagedReference
 	    private PessoaJuridica pessoaJuridica;
 	
 
