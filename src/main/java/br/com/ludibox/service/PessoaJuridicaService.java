@@ -39,6 +39,9 @@ public class PessoaJuridicaService {
 
 	@Autowired
 	private CepService cepService;
+
+	@Autowired
+	private CnpjService cnpjService;
     
     
     public void salvarImagemPessoa(MultipartFile imagem, Integer idPessoa) throws LudiBoxException {
@@ -55,6 +58,8 @@ public class PessoaJuridicaService {
 		Endereco enderecoCepValidado = new Endereco();
 
 		enderecoCepValidado =  cepService.validarCep(pessoaJuridica.getEndereco());
+
+		cnpjService.validarCepAndCnpj(pessoaJuridica);
 
 		pessoaJuridica.setEndereco(enderecoCepValidado);
 		enderecoCepValidado.setPessoaJuridica(pessoaJuridica);

@@ -2,8 +2,10 @@ package br.com.ludibox.controller;
 
 import br.com.ludibox.auth.AuthenticationService;
 import br.com.ludibox.exception.LudiBoxException;
+import br.com.ludibox.model.dto.CnpjDTO;
 import br.com.ludibox.model.entity.PessoaFisica;
 import br.com.ludibox.model.entity.PessoaJuridica;
+import br.com.ludibox.service.CnpjService;
 import br.com.ludibox.service.PessoaJuridicaService;
 import io.jsonwebtoken.io.IOException;
 
@@ -23,8 +25,17 @@ public class PessoaJuridicaController {
 
     @Autowired
     private AuthenticationService authService;
-    
-    
+
+    @Autowired
+    private CnpjService cnpjService;
+
+
+    @GetMapping("/busca_por_cnpj/{cnpj}")
+    public CnpjDTO buscarPjPorCnpj(@PathVariable String cnpj){
+        CnpjDTO cnpjDTO = cnpjService.buscarPjPorCnpj(cnpj);
+        return cnpjDTO;
+    }
+
     @PostMapping("/{idPessoa}/upload")
 	public void UploadPessoa(@RequestParam("imagem") MultipartFile imagem, @PathVariable Integer idPessoa)
 			throws LudiBoxException, IOException {
