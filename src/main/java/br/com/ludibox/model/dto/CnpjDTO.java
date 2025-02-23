@@ -15,7 +15,7 @@ public class CnpjDTO {
 
     private String logadouro;
 
-    private Integer numero;
+    private String numero;
 
     private String complemento;
 
