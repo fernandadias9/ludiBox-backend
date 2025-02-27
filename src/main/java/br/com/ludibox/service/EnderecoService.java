@@ -1,6 +1,7 @@
 package br.com.ludibox.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
@@ -74,7 +75,7 @@ public class EnderecoService {
     	validarPessoaFisica(pessoaAutenticada);
 		validarNumeroDePf(endereco);
     	if (pessoaAutenticada.getId() != endereco.getPessoaFisica().getId()) {
-			throw new LudiBoxException("Usuários só podem alterar seus próprios dados!");
+			throw new LudiBoxException("Usuários só podem alterar seus próprios dados!", HttpStatus.BAD_REQUEST);
 		}
     	return enderecoRepository.save(endereco);
     }
@@ -84,7 +85,7 @@ public class EnderecoService {
     	validarPessoaJuridica(pessoaAutenticada);
 		validarNumeroDePj(endereco);
     	if (pessoaAutenticada.getId() != endereco.getPessoaJuridica().getId()) {
-			throw new LudiBoxException("Usuários só podem alterar seus próprios dados!");
+			throw new LudiBoxException("Usuários só podem alterar seus próprios dados!", HttpStatus.BAD_REQUEST);
 		}
     	return enderecoRepository.save(endereco);
     }
@@ -101,27 +102,27 @@ public class EnderecoService {
 
 	private void validarPessoaFisica(PessoaFisica pessoaValidada) throws LudiBoxException {
 	    pessoaFisicaRepository.findById(pessoaValidada.getId())
-	        .orElseThrow(() -> new LudiBoxException("Pessoa física com ID " + pessoaValidada.getId() + " não encontrada!"));
+	        .orElseThrow(() -> new LudiBoxException("Pessoa física com ID " + pessoaValidada.getId() + " não encontrada!", HttpStatus.INTERNAL_SERVER_ERROR));
 	}
 
 	private void validarPessoaJuridica(PessoaJuridica pessoaValidada) throws LudiBoxException {
 	    pessoaJuridicaRepository.findById(pessoaValidada.getId())
-	        .orElseThrow(() -> new LudiBoxException("Pessoa jurídica com ID " + pessoaValidada.getId() + " não encontrada!"));
+	        .orElseThrow(() -> new LudiBoxException("Pessoa jurídica com ID " + pessoaValidada.getId() + " não encontrada!", HttpStatus.INTERNAL_SERVER_ERROR));
 	}
 
 	public void validarNumeroDePf(Endereco enderecoValidado) throws LudiBoxException {
 	    Integer numero = enderecoValidado.getNumero();
 	    if (enderecoValidado.isSemNumero() && numero != null && numero != 0) {
-	        throw new LudiBoxException("Número não foi solicitado!");
+	        throw new LudiBoxException("Número não foi solicitado!", HttpStatus.BAD_REQUEST);
 	    } else if (!enderecoValidado.isSemNumero() && (numero == null || numero == 0)) {
-	        throw new LudiBoxException("Número não foi adicionado!");
+	        throw new LudiBoxException("Número não foi adicionado!", HttpStatus.BAD_REQUEST);
 	    }
 	}
 
 	public void validarNumeroDePj(Endereco enderecoValidado) throws LudiBoxException {
 	    Integer numero = enderecoValidado.getNumero();
 	    if (numero == null || numero == 0) {
-	        throw new LudiBoxException("Número não foi adicionado!");
+	        throw new LudiBoxException("Número não foi adicionado!", HttpStatus.BAD_REQUEST);
 	    }
 	}
 

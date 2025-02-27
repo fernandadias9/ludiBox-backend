@@ -1,6 +1,7 @@
 package br.com.ludibox.auth;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -41,7 +42,7 @@ public class AuthenticationService {
 	        
 	        
 	        if (authentication == null || !authentication.isAuthenticated()) {
-	            throw new LudiBoxException("Usuário não autenticado.");
+	            throw new LudiBoxException("Usuário não autenticado.", HttpStatus.BAD_REQUEST);
 	        }
 	        
 	        Object principal = authentication.getPrincipal();
@@ -52,17 +53,17 @@ public class AuthenticationService {
 	            String login = jwt.getClaim("sub");
 
 	            return pessoaFisicaRepository.findByEmail(login)
-	                    .orElseThrow(() -> new LudiBoxException("Usuário não encontrado: " + login));
+	                    .orElseThrow(() -> new LudiBoxException("Usuário não encontrado: " + login, HttpStatus.BAD_REQUEST));
 	        } else if (principal instanceof UserDetails) {
 	            String username = ((UserDetails) principal).getUsername();
 
 	            return pessoaFisicaRepository.findByEmail(username)
-	                    .orElseThrow(() -> new LudiBoxException("Usuário não encontrado: " + username));
+	                    .orElseThrow(() -> new LudiBoxException("Usuário não encontrado: " + username, HttpStatus.BAD_REQUEST));
 	        } else if (principal instanceof PessoaFisica) {
 	            return (PessoaFisica) principal;
 	        }
 	        
-	        throw new LudiBoxException("Tipo inesperado de principal: " + principal.getClass());
+	        throw new LudiBoxException("Tipo inesperado de principal: " + principal.getClass(), HttpStatus.INTERNAL_SERVER_ERROR);
 	        
 	    
 	    }
@@ -72,7 +73,7 @@ public class AuthenticationService {
 	        
 	        
 	        if (authentication == null || !authentication.isAuthenticated()) {
-	            throw new LudiBoxException("Usuário não autenticado.");
+	            throw new LudiBoxException("Usuário não autenticado.", HttpStatus.BAD_REQUEST);
 	        }
 	        
 	        Object principal = authentication.getPrincipal();
@@ -83,17 +84,17 @@ public class AuthenticationService {
 	            String login = jwt.getClaim("sub");
 
 	            return pessoaJuridicaRepository.findByEmail(login)
-	                    .orElseThrow(() -> new LudiBoxException("Usuário não encontrado: " + login));
+	                    .orElseThrow(() -> new LudiBoxException("Usuário não encontrado: " + login, HttpStatus.INTERNAL_SERVER_ERROR));
 	        } else if (principal instanceof UserDetails) {
 	            String username = ((UserDetails) principal).getUsername();
 
 	            return pessoaJuridicaRepository.findByEmail(username)
-	                    .orElseThrow(() -> new LudiBoxException("Usuário não encontrado: " + username));
+	                    .orElseThrow(() -> new LudiBoxException("Usuário não encontrado: " + username, HttpStatus.INTERNAL_SERVER_ERROR));
 	        } else if (principal instanceof PessoaFisica) {
 	            return (PessoaJuridica) principal;
 	        }
 	        
-	        throw new LudiBoxException("Tipo inesperado de principal: " + principal.getClass());
+	        throw new LudiBoxException("Tipo inesperado de principal: " + principal.getClass(), HttpStatus.INTERNAL_SERVER_ERROR);
 	        
 	    
 	    }

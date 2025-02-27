@@ -5,6 +5,7 @@ import br.com.ludibox.exception.LudiBoxException;
 import br.com.ludibox.model.dto.CepDTO;
 import br.com.ludibox.model.entity.Endereco;
 import io.jsonwebtoken.io.IOException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -21,7 +22,7 @@ public class CepService {
             RestTemplate restTemplate = new RestTemplate();
             cepDTO = restTemplate.getForEntity(url, CepDTO.class).getBody();
         }catch (Exception e){
-            throw new LudiBoxException("CEP inválido");
+            throw new LudiBoxException("CEP inválido", HttpStatus.BAD_REQUEST);
         }
         endereco.setCidade(cepDTO.getLocalidade());
         endereco.setEstado(cepDTO.getEstado());
@@ -36,7 +37,7 @@ public class CepService {
             RestTemplate restTemplate = new RestTemplate();
             cepDTO = restTemplate.getForEntity(url, CepDTO.class).getBody();
         } catch (Exception e){
-            throw  new LudiBoxException("CEP invalido");
+            throw  new LudiBoxException("CEP invalido", HttpStatus.BAD_REQUEST);
         }
 
         return cepDTO;

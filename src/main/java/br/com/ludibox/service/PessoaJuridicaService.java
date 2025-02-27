@@ -11,14 +11,21 @@ import br.com.ludibox.model.repository.PessoaFisicaRepository;
 import br.com.ludibox.model.repository.PessoaJuridicaRepository;
 
 import java.util.List;
+import java.util.Set;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+import lombok.Data;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+@Data
 @Service
 public class PessoaJuridicaService {
 
@@ -42,31 +49,40 @@ public class PessoaJuridicaService {
 
 	@Autowired
 	private CnpjService cnpjService;
+
+	@Autowired
+	private Validator validator;
     
     
     public void salvarImagemPessoa(MultipartFile imagem, Integer idPessoa) throws LudiBoxException {
 		
 		PessoaJuridica pessoaComImagem = pessoaJuridicaRepository.
 				findById(idPessoa)
-				.orElseThrow(() -> new LudiBoxException("Usuario não encontrado"));					
+				.orElseThrow(() -> new LudiBoxException("Usuario não encontrado", HttpStatus.BAD_REQUEST));
 		String imagemBase64 = imagemService.processarImagem(imagem);
 		pessoaComImagem.setImagemUsuarioEmBase64(imagemBase64);
 		pessoaJuridicaRepository.save(pessoaComImagem);
 	}
     
     public PessoaJuridica salvar(PessoaJuridica pessoaJuridica) throws LudiBoxException {
-		Endereco enderecoCepValidado = new Endereco();
+		try {
 
-		enderecoCepValidado =  cepService.validarCep(pessoaJuridica.getEndereco());
+			Endereco enderecoCepValidado = new Endereco();
 
-		cnpjService.validarCepAndCnpj(pessoaJuridica);
+			enderecoCepValidado = cepService.validarCep(pessoaJuridica.getEndereco());
 
-		pessoaJuridica.setEndereco(enderecoCepValidado);
-		enderecoCepValidado.setPessoaJuridica(pessoaJuridica);
+			cnpjService.validarCepAndCnpj(pessoaJuridica);
 
-		verificarPessoaExistente(pessoaJuridica);
+			pessoaJuridica.setEndereco(enderecoCepValidado);
+			enderecoCepValidado.setPessoaJuridica(pessoaJuridica);
 
-		return pessoaJuridicaRepository.save(pessoaJuridica);
+			verificarPessoaExistente(pessoaJuridica);
+
+			return pessoaJuridicaRepository.save(pessoaJuridica);
+
+		} catch (ConstraintViolationException e){
+			throw new LudiBoxException("Erro ao salvar usuário: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
     }
     
     public PessoaJuridica atualizarDados(PessoaJuridica pessoaJuridica) throws LudiBoxException{
@@ -74,7 +90,7 @@ public class PessoaJuridicaService {
     	
     	verificarDados(pessoaJuridica);
     	if (pessoaAutenticada.getId() != pessoaJuridica.getId()) {
-			throw new LudiBoxException("Usuários só podem alterar seus próprios dados!");
+			throw new LudiBoxException("Usuários só podem alterar seus próprios dados!", HttpStatus.BAD_REQUEST);
 		}
     	
     	return pessoaJuridicaRepository.save(pessoaJuridica);
@@ -85,7 +101,7 @@ public class PessoaJuridicaService {
     	PessoaJuridica pessoaAutenticada = authService.getPessoaJuridicaAutenticada();
     	
     	if (pessoaAutenticada.getId() != pessoaJuridica.getId()) {
-			throw new LudiBoxException("Usuários só podem alterar seus próprios dados!");
+			throw new LudiBoxException("Usuários só podem alterar seus próprios dados!", HttpStatus.BAD_REQUEST);
 		}
     	
     	PessoaJuridica pessoa = pessoaJuridicaRepository.findById(pessoaJuridica.getId()).get();
@@ -98,7 +114,7 @@ public class PessoaJuridicaService {
     	PessoaJuridica pjAutenticada = authService.getPessoaJuridicaAutenticada();
     	
     	if (pjAutenticada.getPerfil() == EnumPerfil.USUARIO) {
-    		throw new LudiBoxException("Ação exclusiva para administradores!");
+    		throw new LudiBoxException("Ação exclusiva para administradores!", HttpStatus.BAD_REQUEST);
 		}
     	
     	PessoaJuridica pessoa = pessoaJuridicaRepository.findById(pessoaJuridica.getId()).get();
@@ -111,7 +127,7 @@ public class PessoaJuridicaService {
     	PessoaJuridica pjAutenticada = authService.getPessoaJuridicaAutenticada();
     	
     	if (pjAutenticada.getPerfil() == EnumPerfil.USUARIO) {
-    		throw new LudiBoxException("Ação exclusiva para administradores!");
+    		throw new LudiBoxException("Ação exclusiva para administradores!", HttpStatus.UNAUTHORIZED);
 		}
     	
     	PessoaJuridica pessoa = pessoaJuridicaRepository.findById(pessoaJuridica.getId()).get();
@@ -123,7 +139,7 @@ public class PessoaJuridicaService {
     	PessoaJuridica pjAutenticada = authService.getPessoaJuridicaAutenticada();
     	
     	if (pjAutenticada.getPerfil() == EnumPerfil.USUARIO) {
-    		throw new LudiBoxException("Ação exclusiva para administradores!");
+    		throw new LudiBoxException("Ação exclusiva para administradores!", HttpStatus.UNAUTHORIZED);
 		}
     	return pessoaJuridicaRepository.findAll();
     }
@@ -131,7 +147,7 @@ public class PessoaJuridicaService {
     private void verificarDados(PessoaJuridica pessoaJuridica) throws LudiBoxException {
     	PessoaJuridica pessoaVerificada = pessoaJuridicaRepository.findById(pessoaJuridica.getId()).get();
 		if(!pessoaVerificada.getCnpj().equals(pessoaJuridica.getCnpj())) {
-			throw new LudiBoxException("O CNPJ não pode ser alterado!");
+			throw new LudiBoxException("O CNPJ não pode ser alterado!", HttpStatus.BAD_REQUEST);
 		}		
 	}
 
@@ -141,20 +157,20 @@ public class PessoaJuridicaService {
     	
     	for (PessoaJuridica pessoaValidada : pessoasPj) {
     		if (pessoaJuridica.getCnpj().equals(pessoaValidada.getCnpj())) {
-    			throw new LudiBoxException("CNPJ já cadastrado!");
+    			throw new LudiBoxException("CNPJ já cadastrado!", HttpStatus.BAD_REQUEST);
 			}else if (pessoaJuridica.getEmail().equals(pessoaValidada.getEmail())) {
-				throw new LudiBoxException("Email já cadastrado!");
+				throw new LudiBoxException("Email já cadastrado!", HttpStatus.BAD_REQUEST);
 			} else if (pessoaJuridica.getTelefone().equals(pessoaValidada.getTelefone())) {
-				throw new LudiBoxException("Telefone já cadastrado!");
+				throw new LudiBoxException("Telefone já cadastrado!", HttpStatus.BAD_REQUEST);
 			}
 			
 		}    
     	
     	for (PessoaFisica pessoaPfValidada : pessoasPf) {
     		if (pessoaJuridica.getEmail().equals(pessoaPfValidada.getEmail())) {
-				throw new LudiBoxException("Email já cadastrado!");
+				throw new LudiBoxException("Email já cadastrado!", HttpStatus.BAD_REQUEST);
 			} else if (pessoaJuridica.getTelefone().equals(pessoaPfValidada.getTelefone())) {
-				throw new LudiBoxException("Telefone já cadastrado!");
+				throw new LudiBoxException("Telefone já cadastrado!", HttpStatus.BAD_REQUEST);
 			}
 			
 		}  

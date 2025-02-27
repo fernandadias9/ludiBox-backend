@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -54,7 +55,7 @@ public class JwtService {
 			String login = jwt.getClaim("sub");
 
 			pessoaFisicaAutenticada = pessoaFisicaRepository.findByEmail(login)
-					.orElseThrow(() -> new LudiBoxException("Usuário não encontrado: " + login));
+					.orElseThrow(() -> new LudiBoxException("Usuário não encontrado: " + login, HttpStatus.BAD_REQUEST));
 		}else {
 
 			pessoaFisicaAutenticada = (PessoaFisica) authentication.getPrincipal();
@@ -94,7 +95,7 @@ public class JwtService {
 			String login = jwt.getClaim("sub");
 
 			pessoaJuridicaAutenticada = pessoaJuridicaRepository.findByEmail(login)
-					.orElseThrow(() -> new LudiBoxException("Usuário não encontrado: " + login));
+					.orElseThrow(() -> new LudiBoxException("Usuário não encontrado: " + login, HttpStatus.BAD_REQUEST));
 		}else {
 
 			pessoaJuridicaAutenticada = (PessoaJuridica) authentication.getPrincipal();

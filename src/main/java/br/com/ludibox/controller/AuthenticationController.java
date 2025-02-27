@@ -1,5 +1,7 @@
 package br.com.ludibox.controller;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -63,18 +65,22 @@ public class AuthenticationController {
 		novaPessoaFisica.setPerfil(EnumPerfil.USUARIO);
 		
 		pessoaFisicaService.salvar(novaPessoaFisica); 
-	} 
-	
+	}
+
 	@PostMapping("/nova-pessoa-juridica")
-	@ResponseStatus(code = HttpStatus.CREATED) 
-	public void registrarPessoaJuridica(@RequestBody @Valid PessoaJuridica novaPessoaJuridica) throws LudiBoxException {
+	@ResponseStatus(code = HttpStatus.CREATED)
+	public ResponseEntity<String> registrarPessoaJuridica(@RequestBody @Valid PessoaJuridica novaPessoaJuridica) throws LudiBoxException {
+
 		String senhaCifrada = passwordEncoder.encode(novaPessoaJuridica.getSenha());
 		novaPessoaJuridica.setSenha(senhaCifrada);
 		novaPessoaJuridica.setPerfil(EnumPerfil.USUARIO);
-		
-		pessoaJuridicaService.salvar(novaPessoaJuridica); 
-	} 
-	
- }
+
+		pessoaJuridicaService.salvar(novaPessoaJuridica);
+		return ResponseEntity.status(HttpStatus.CREATED).build();
+
+
+
+	}
+}
  
 	

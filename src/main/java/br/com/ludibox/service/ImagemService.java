@@ -3,6 +3,7 @@ package br.com.ludibox.service;
 import java.io.IOException;
 import java.util.Base64;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,7 +19,7 @@ public class ImagemService {
 		try {
 			imagemBytes = file.getBytes();
 		} catch (IOException e) {
-			throw new LudiBoxException("Erro ao processar arquivo");
+			throw new LudiBoxException("Erro ao processar arquivo", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
         
         // Converte byte[] para Base64

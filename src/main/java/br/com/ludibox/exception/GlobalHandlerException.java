@@ -3,18 +3,22 @@ package br.com.ludibox.exception;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.persistence.PersistenceException;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
 
 @ControllerAdvice
 public class GlobalHandlerException {
 	
 	@ExceptionHandler(LudiBoxException.class)
-    public ResponseEntity<String> handleVemNoX1Exception(LudiBoxException ex) {
+    public ResponseEntity<String> ludiBoxException(LudiBoxException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.FORBIDDEN);
     }
     
@@ -30,6 +34,17 @@ public class GlobalHandlerException {
         });
 
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<Map<String, String>> handleViolationException(ConstraintViolationException e){
+        Map<String, String> errors = new HashMap<>();
+
+        e.getConstraintViolations().forEach(violation ->
+                errors.put(violation.getPropertyPath().toString(), violation.getMessage())
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
 }

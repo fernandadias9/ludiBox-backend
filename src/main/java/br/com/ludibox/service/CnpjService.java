@@ -3,6 +3,7 @@ package br.com.ludibox.service;
 import br.com.ludibox.exception.LudiBoxException;
 import br.com.ludibox.model.dto.CnpjDTO;
 import br.com.ludibox.model.entity.PessoaJuridica;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -30,7 +31,7 @@ public class CnpjService {
         cepConvertido = String.valueOf(pj.getEndereco().getCep());
 
         if (!cepTratado.equals(cepConvertido)){
-            throw new LudiBoxException("CEP (" + pj.getEndereco().getCep() +") não pertence ao CNPJ ("+ pj.getCnpj() +") informado!");
+            throw new LudiBoxException("CEP (" + pj.getEndereco().getCep() +") não pertence ao CNPJ ("+ pj.getCnpj() +") informado!", HttpStatus.BAD_REQUEST);
         }
     }
 

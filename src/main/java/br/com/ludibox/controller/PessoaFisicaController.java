@@ -10,6 +10,7 @@ import jakarta.persistence.criteria.CriteriaBuilder.In;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,12 +30,12 @@ public class PessoaFisicaController {
 	public void UploadPessoa(@RequestParam("imagem") MultipartFile imagem, @PathVariable Integer idPessoa)
 			throws LudiBoxException, IOException {
 		if(imagem == null) {
-			throw new LudiBoxException("Arquivo inválido");
+			throw new LudiBoxException("Arquivo inválido", HttpStatus.BAD_REQUEST);
 		}
 		
 		PessoaFisica pessoaAutenticada = authService.getPessoaFisicaAutenticada();
 		if (pessoaAutenticada == null) {
-			throw new LudiBoxException("Usuário sem permissão de acesso");
+			throw new LudiBoxException("Usuário sem permissão de acesso", HttpStatus.UNAUTHORIZED);
 		}
 		
 		service.salvarImagemPessoa(imagem, idPessoa);
