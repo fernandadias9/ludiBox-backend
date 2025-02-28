@@ -56,14 +56,7 @@ public class Endereco {
 		private String estado;
 		
 		@ManyToOne
-	    @JoinColumn(name = "pessoa_fisica_id")
-	    private PessoaFisica pessoaFisica;
-
-	    @OneToOne
-	    @JoinColumn(name = "pessoa_juridica_id")
-		@JsonManagedReference
-	    private PessoaJuridica pessoaJuridica;
-	
-
+	    @JoinColumn(name = "pessoa_id")
+	    private Pessoa pessoa;
 	}
 

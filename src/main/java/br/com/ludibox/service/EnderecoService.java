@@ -2,30 +2,19 @@ package br.com.ludibox.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import br.com.ludibox.auth.AuthenticationService;
 import br.com.ludibox.exception.LudiBoxException;
 import br.com.ludibox.model.entity.Endereco;
-import br.com.ludibox.model.entity.PessoaFisica;
-import br.com.ludibox.model.entity.PessoaJuridica;
 import br.com.ludibox.model.repository.EnderecoRepository;
-import br.com.ludibox.model.repository.PessoaFisicaRepository;
-import br.com.ludibox.model.repository.PessoaJuridicaRepository;
 
 @Service
 public class EnderecoService {
 	
 	@Autowired
 	private EnderecoRepository enderecoRepository;
-	
-	@Autowired
-	private PessoaFisicaRepository pessoaFisicaRepository;
-	
-	@Autowired
-	private PessoaJuridicaRepository pessoaJuridicaRepository;
-	
+
 	 @Autowired
 	 private AuthenticationService authService;
 
@@ -35,7 +24,7 @@ public class EnderecoService {
 
 	
 	 
-	public Endereco salvarEnderecoParaPf(Endereco novo) throws LudiBoxException {
+/*	public Endereco salvarEnderecoParaPf(Endereco novo) throws LudiBoxException {
 		PessoaFisica pfAutenticada = authService.getPessoaFisicaAutenticada();
 
 		Endereco enderecoCepValidado = new Endereco();
@@ -49,9 +38,9 @@ public class EnderecoService {
 			pfAutenticada.getEnderecos().add(enderecoCepValidado);
 			
 			return enderecoRepository.save(novo);
-		}
+		}*/
 	 
-	public Endereco salvarEnderecoParaPj(Endereco novo) throws LudiBoxException {
+	/*public Endereco salvarEnderecoParaPj(Endereco novo) throws LudiBoxException {
 		PessoaJuridica pjAutenticada = authService.getPessoaJuridicaAutenticada();
 		Endereco enderecoValidado = new Endereco();
 		Endereco enderecoCepValidado = new Endereco();
@@ -99,8 +88,8 @@ public class EnderecoService {
 		}
 		return novo;
 	}
-
-	private void validarPessoaFisica(PessoaFisica pessoaValidada) throws LudiBoxException {
+*/
+	/*private void validarPessoaFisica(PessoaFisica pessoaValidada) throws LudiBoxException {
 	    pessoaFisicaRepository.findById(pessoaValidada.getId())
 	        .orElseThrow(() -> new LudiBoxException("Pessoa física com ID " + pessoaValidada.getId() + " não encontrada!", HttpStatus.INTERNAL_SERVER_ERROR));
 	}
@@ -108,9 +97,9 @@ public class EnderecoService {
 	private void validarPessoaJuridica(PessoaJuridica pessoaValidada) throws LudiBoxException {
 	    pessoaJuridicaRepository.findById(pessoaValidada.getId())
 	        .orElseThrow(() -> new LudiBoxException("Pessoa jurídica com ID " + pessoaValidada.getId() + " não encontrada!", HttpStatus.INTERNAL_SERVER_ERROR));
-	}
+	}*/
 
-	public void validarNumeroDePf(Endereco enderecoValidado) throws LudiBoxException {
+	/*public void validarNumeroDePf(Endereco enderecoValidado) throws LudiBoxException {
 	    Integer numero = enderecoValidado.getNumero();
 	    if (enderecoValidado.isSemNumero() && numero != null && numero != 0) {
 	        throw new LudiBoxException("Número não foi solicitado!", HttpStatus.BAD_REQUEST);
@@ -125,7 +114,7 @@ public class EnderecoService {
 	        throw new LudiBoxException("Número não foi adicionado!", HttpStatus.BAD_REQUEST);
 	    }
 	}
-
+*/
 
 
 	

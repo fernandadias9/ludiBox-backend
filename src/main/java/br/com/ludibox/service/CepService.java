@@ -22,7 +22,7 @@ public class CepService {
             RestTemplate restTemplate = new RestTemplate();
             cepDTO = restTemplate.getForEntity(url, CepDTO.class).getBody();
         }catch (Exception e){
-            throw new LudiBoxException("CEP inválido", HttpStatus.BAD_REQUEST);
+            throw new LudiBoxException("CEP: ", "Valor inválido", HttpStatus.BAD_REQUEST);
         }
         endereco.setCidade(cepDTO.getLocalidade());
         endereco.setEstado(cepDTO.getEstado());
@@ -37,7 +37,7 @@ public class CepService {
             RestTemplate restTemplate = new RestTemplate();
             cepDTO = restTemplate.getForEntity(url, CepDTO.class).getBody();
         } catch (Exception e){
-            throw  new LudiBoxException("CEP invalido", HttpStatus.BAD_REQUEST);
+            throw  new LudiBoxException("CEP: ", "valor inválido", HttpStatus.BAD_REQUEST);
         }
 
         return cepDTO;

@@ -16,10 +16,13 @@ import org.springframework.web.context.request.WebRequest;
 
 @ControllerAdvice
 public class GlobalHandlerException {
-	
-	@ExceptionHandler(LudiBoxException.class)
-    public ResponseEntity<String> ludiBoxException(LudiBoxException ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.FORBIDDEN);
+
+    @ExceptionHandler(LudiBoxException.class)
+    public ResponseEntity<Map<String, String>> handleLudiBoxException(LudiBoxException ex) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put(ex.getCampo(), ex.getMensagem());
+
+        return ResponseEntity.status(ex.getHttpStatus()).body(errorResponse);
     }
     
     @ExceptionHandler(MethodArgumentNotValidException.class)

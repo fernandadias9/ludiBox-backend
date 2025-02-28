@@ -19,7 +19,7 @@ public class ImagemService {
 		try {
 			imagemBytes = file.getBytes();
 		} catch (IOException e) {
-			throw new LudiBoxException("Erro ao processar arquivo", HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new LudiBoxException("Erro: ", "Erro ao processar arquivo", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
         
         // Converte byte[] para Base64
