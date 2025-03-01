@@ -46,19 +46,25 @@ public class PessoaService {
 
     public Pessoa salvar(Pessoa pessoa) throws LudiBoxException {
         verificarPessoaExistente(pessoa);
-        validarTelefone(pessoa.getTelefone());
+        pessoa.setTelefone(validarTelefone(pessoa.getTelefone()));
         String senhaCifrada = passwordEncoder.encode(pessoa.getSenha());
         pessoa.setSenha(senhaCifrada);
 
         return pessoaRepository.save(pessoa);
     }
 
-    private void validarTelefone(String telefone) {
-        telefone = telefone.replaceAll("[^0-9]","");
+    private String validarTelefone(String telefone) {
+        if (telefone == null || telefone.isBlank()) {
+            throw new LudiBoxException("Telefone: ", "Número não pode estar vazio!", HttpStatus.BAD_REQUEST);
+        }
 
-        if (telefone.length() != 10 & telefone.length() != 11){
+        telefone = telefone.replaceAll("[^0-9]", ""); // Remove caracteres não numéricos
+
+        if (telefone.length() != 10 && telefone.length() != 11) {
             throw new LudiBoxException("Telefone: ", "Número inserido é inválido!", HttpStatus.BAD_REQUEST);
         }
+
+        return telefone;
     }
 
 

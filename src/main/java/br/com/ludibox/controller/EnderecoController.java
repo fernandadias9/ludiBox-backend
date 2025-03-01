@@ -3,12 +3,18 @@ package br.com.ludibox.controller;
 import br.com.ludibox.exception.LudiBoxException;
 import br.com.ludibox.model.dto.CepDTO;
 import br.com.ludibox.model.entity.Endereco;
+import br.com.ludibox.model.entity.Pessoa;
 import br.com.ludibox.service.CepService;
 import br.com.ludibox.service.EnderecoService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.Optional;
 
 
 @RestController
@@ -21,25 +27,31 @@ public class EnderecoController {
 	@Autowired
 	private CepService cepService;
 	
-	/*@PostMapping("/add_for_Pf")
-	public ResponseEntity<Endereco> salvarEnderecoParaPf(@RequestBody Endereco novo) throws LudiBoxException{
-		return ResponseEntity.ok(enderecoService.salvarEnderecoParaPf(novo));
+	@PostMapping("/novo-endereco")
+	public ResponseEntity<Endereco> salvarEnderecoParaPessoa(@RequestBody Endereco novo) throws LudiBoxException{
+		return ResponseEntity.ok(enderecoService.salvarEnderecoParaPessoa(novo));
 	}
-	
-	@PostMapping("/add_for_Pj")
-	public ResponseEntity<Endereco> salvarEnderecoParaPj(@RequestBody Endereco novo) throws LudiBoxException{
-		return ResponseEntity.ok(enderecoService.salvarEnderecoParaPj(novo));
-	}
-	*/
-	/*@PutMapping("/update_for_Pf")
-    public ResponseEntity<Endereco> atualizarEnderecoParaPf(@RequestBody Endereco endereco) throws LudiBoxException {
-        return ResponseEntity.ok(enderecoService.atualizarEnderecoPf(endereco));
+
+
+	@PatchMapping("/atualizar-endereco/{id}")
+    public ResponseEntity<Endereco> atualizarEnderecoParaPessoa(
+			@PathVariable int id,
+			@RequestBody Map<String, Object> enderecoDetails,
+			BindingResult bindingResult) throws LudiBoxException {
+
+		Optional<Endereco> enderecoOptional = Optional.ofNullable(enderecoService.buscarPorId(id));
+
+		if (!enderecoOptional.isPresent()) {
+			return ResponseEntity.notFound().build();
+		}
+		Endereco endereco = enderecoOptional.get();
+		enderecoService.atualizarEnderecoPessoa(endereco, enderecoDetails);
+		if (bindingResult.hasErrors()) {
+			throw new LudiBoxException("Erro: ", "Erro de validação de dados enviados", HttpStatus.BAD_REQUEST);
+		}
+
+        return ResponseEntity.ok(endereco);
     }
-	
-	@PutMapping("/update_for_Pj")
-    public ResponseEntity<Endereco> atualizarEnderecoParaPj(@RequestBody Endereco endereco) throws LudiBoxException {
-        return ResponseEntity.ok(enderecoService.atualizarEnderecoPj(endereco));
-    }*/
 
 	@GetMapping("/buscar_por_cep/{cep}")
 	public CepDTO buscarEnderecoPorCep(@PathVariable Integer cep) throws LudiBoxException {

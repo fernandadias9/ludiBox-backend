@@ -25,7 +25,7 @@ public class Endereco {
 		private Integer id;
 		
 		@NotBlank(message = "Nome do endereço é obrigatório")
-		@Size(min = 3)
+		@Size(min = 3, max = 100)
 		private String nome;
 		
 		@NotNull(message = "CEP é obrigatório")
@@ -34,13 +34,9 @@ public class Endereco {
 		@NotBlank(message = "Rua é obrigatória")
 		@Size(min = 3)
 		private String rua;
-		
-		@NotNull(message = "Número é obrigatório")
+
 		private Integer numero;
-		
-		@NotNull(message = "Campo obrigatório")
-		private boolean semNumero;
-		
+
 		private String complemento;
 		
 		@NotBlank(message = "Bairro é obrigatório")
