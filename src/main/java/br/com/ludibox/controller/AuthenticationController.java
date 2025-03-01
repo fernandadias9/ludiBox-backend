@@ -1,6 +1,7 @@
 package br.com.ludibox.controller;
 
 import br.com.ludibox.model.entity.Pessoa;
+import br.com.ludibox.model.enums.EnumStatus;
 import br.com.ludibox.service.PessoaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,9 +28,6 @@ public class AuthenticationController {
 	private AuthenticationService authenticationService;
 
 	@Autowired
-	private PasswordEncoder passwordEncoder;
-
-	@Autowired
 	private PessoaService pessoaService;
 
 	@PostMapping("authenticatePessoa")
@@ -37,22 +35,15 @@ public class AuthenticationController {
 		return authenticationService.authenticatePessoa(authentication);
 	}
 
-
 	@PostMapping("/cadastrar_adm")
 	@ResponseStatus(code = HttpStatus.CREATED)
 	public ResponseEntity<Pessoa> cadastrarAdm(@RequestBody @Valid Pessoa pessoa) throws LudiBoxException {
-		String senhaCifrada = passwordEncoder.encode(pessoa.getSenha());
-		pessoa.setSenha(senhaCifrada);
 		return ResponseEntity.ok(pessoaService.cadastrarAdm(pessoa));
 	}
 
 	@PostMapping("/nova-pessoa")
 	@ResponseStatus(code = HttpStatus.CREATED)
 	public void registrarPessoa(@RequestBody @Valid Pessoa novaPessoa) throws LudiBoxException {
-		String senhaCifrada = passwordEncoder.encode(novaPessoa.getSenha());
-		novaPessoa.setSenha(senhaCifrada);
-			novaPessoa.setPerfil(EnumPerfil.USUARIO);
-
 		pessoaService.salvar(novaPessoa);
 
 	}

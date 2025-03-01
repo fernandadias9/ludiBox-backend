@@ -8,10 +8,13 @@ import io.jsonwebtoken.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/pessoa")
@@ -45,24 +48,40 @@ public class PessoaController {
         return ResponseEntity.ok(pessoaService.cadastrarAdm(pessoa));
     }
 
-    @PutMapping("/atualizar")
-    public ResponseEntity<Pessoa> atualizarPessoa(@RequestBody Pessoa pessoa) throws LudiBoxException {
-        return ResponseEntity.ok(pessoaService.atualizarDados(pessoa));
+    @PatchMapping("/atualizar/{id}")
+    public ResponseEntity<Pessoa> atualizarPessoa(
+            @PathVariable int id,
+            @RequestBody Map<String, Object> pessoaDetails,
+            BindingResult bindingResult) throws LudiBoxException {
+
+        Optional<Pessoa> pessoaOptional = Optional.ofNullable(pessoaService.buscarPorId(id));
+
+        if (!pessoaOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        Pessoa pessoa = pessoaOptional.get();
+        pessoaService.atualizarDados(pessoa, pessoaDetails);
+        if (bindingResult.hasErrors()) {
+            throw new LudiBoxException("Erro: ", "Erro de validação nos dados enviados", HttpStatus.BAD_REQUEST);
+        }
+
+        return ResponseEntity.ok(pessoa);
     }
 
-    @PutMapping("/desativar")
-    public void desativarPessoa(@RequestBody Pessoa pessoa) throws LudiBoxException {
-        pessoaService.desativarPessoa(pessoa);
+
+    @PutMapping("/desativar/{id}")
+    public void desativarPessoa(@PathVariable int id) throws LudiBoxException {
+        pessoaService.desativarPessoa(id);
     }
 
-    @PutMapping("/reativar")
-    public void reativarPessoa(@RequestBody Pessoa pessoa) throws LudiBoxException {
-        pessoaService.reativarPessoa(pessoa);
+    @PutMapping("/reativar/{id}")
+    public void reativarPessoa(@PathVariable int id) throws LudiBoxException {
+        pessoaService.reativarPessoa(id);
     }
 
-    @PutMapping("/bloquear")
-    public void bloquearPessoa(@RequestBody Pessoa pessoa) throws LudiBoxException {
-        pessoaService.bloquearPessoaFisica(pessoa);
+    @PutMapping("/bloquear/{id}")
+    public void bloquearPessoa(@PathVariable int id) throws LudiBoxException {
+        pessoaService.bloquearPessoaFisica(id);
     }
 
     @GetMapping

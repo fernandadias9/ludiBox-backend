@@ -7,12 +7,16 @@ import br.com.ludibox.model.enums.EnumDocumento;
 import br.com.ludibox.model.enums.EnumPerfil;
 import br.com.ludibox.model.enums.EnumStatus;
 import br.com.ludibox.model.repository.PessoaRepository;
+import jakarta.validation.constraints.Size;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class PessoaService {
@@ -26,6 +30,10 @@ public class PessoaService {
     @Autowired
     private ImagemService imagemService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+
     public void salvarImagemPessoa(MultipartFile imagem, Integer idPessoa) throws LudiBoxException {
 
         Pessoa pessoaComImagem = pessoaRepository.
@@ -38,26 +46,21 @@ public class PessoaService {
 
     public Pessoa salvar(Pessoa pessoa) throws LudiBoxException {
         verificarPessoaExistente(pessoa);
-
-        validarDocumento(pessoa);
+        validarTelefone(pessoa.getTelefone());
+        String senhaCifrada = passwordEncoder.encode(pessoa.getSenha());
+        pessoa.setSenha(senhaCifrada);
 
         return pessoaRepository.save(pessoa);
     }
 
-    private void validarDocumento(Pessoa pessoa) throws LudiBoxException {
-        EnumDocumento tipo = pessoa.getTipoDocumento();
-        String documento = pessoa.getValorDocumento();
+    private void validarTelefone(String telefone) {
+        telefone = telefone.replaceAll("[^0-9]","");
 
-        if(tipo.equals(EnumDocumento.CNPJ)){
-            if (documento.length() != 14){
-                throw new LudiBoxException("CNPJ: ", "O valor inserido é inválido! ", HttpStatus.BAD_REQUEST);
-            }
-        }else if(tipo.equals(EnumDocumento.CPF)){
-            if (documento.length() != 11){
-                throw new LudiBoxException("CPF: ", "O valor inserido é inválido! ", HttpStatus.BAD_REQUEST);
-            }
+        if (telefone.length() != 10 & telefone.length() != 11){
+            throw new LudiBoxException("Telefone: ", "Número inserido é inválido!", HttpStatus.BAD_REQUEST);
         }
     }
+
 
     public void verificarPessoaExistente(Pessoa pessoa) throws LudiBoxException {
         List<Pessoa> pessoas = pessoaRepository.findAll();
@@ -80,6 +83,8 @@ public class PessoaService {
         }
         verificarPessoaExistente(pessoa);
         pessoa.setPerfil(EnumPerfil.ADMINISTRADOR);
+        String senhaCifrada = passwordEncoder.encode(pessoa.getSenha());
+        pessoa.setSenha(senhaCifrada);
         return pessoaRepository.save(pessoa);
     }
 
@@ -93,12 +98,25 @@ public class PessoaService {
         return pessoaRepository.findAll();
     }
 
-    public Pessoa atualizarDados(Pessoa pessoa) throws LudiBoxException{
+    public Pessoa atualizarDados(Pessoa pessoa, Map<String, Object> pessoaDetails) throws LudiBoxException{
         Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
         verificarDados(pessoa);
         if (pessoaAutenticada.getId() != pessoa.getId()) {
             throw new LudiBoxException("Erro: ", "Usuários só podem alterar seus próprios dados!", HttpStatus.UNAUTHORIZED);
         }
+
+
+        for (Map.Entry<String, Object> entry : pessoaDetails.entrySet()) {
+            try {
+                Field field = Pessoa.class.getDeclaredField(entry.getKey());  
+                field.setAccessible(true);  
+                
+                field.set(pessoa, entry.getValue());
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                throw new LudiBoxException("Erro", "Campo inválido ou não acessível: " + entry.getKey(), HttpStatus.BAD_REQUEST);
+            }
+        }
+
         return pessoaRepository.save(pessoa);
     }
 
@@ -107,10 +125,18 @@ public class PessoaService {
         if(!pessoaVerificada.getValorDocumento().equals(pessoa.getValorDocumento())) {
             throw new LudiBoxException("Documento: ", "O documento não pode ser alterado!", HttpStatus.BAD_REQUEST);
         }
+        if(!pessoa.getSituacao().equals(EnumStatus.ATIVO)){
+            throw new LudiBoxException("Situação: ", "A situação não pode ser alterada!", HttpStatus.BAD_REQUEST);
+        }
+        if (!pessoa.getPerfil().equals(EnumPerfil.USUARIO)){
+            throw new LudiBoxException("Perfil: ", "O tipo perfil não pode ser alterado!", HttpStatus.BAD_REQUEST);
+        }
     }
 
-    public void desativarPessoa(Pessoa pessoa) throws LudiBoxException{
+    public void desativarPessoa(int id) throws LudiBoxException{
         Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
+        Pessoa pessoa = pessoaRepository.findById(id).orElseThrow(() -> new LudiBoxException("ID: ", "Pessoa não encontrada!", HttpStatus.BAD_REQUEST));
+
         if (pessoaAutenticada.getId() != pessoa.getId()) {
             throw new LudiBoxException("Erro: ", "Usuários só podem alterar seus próprios dados!", HttpStatus.UNAUTHORIZED);
         }
@@ -120,21 +146,19 @@ public class PessoaService {
         pessoaRepository.save(pessoaDesativada);
     }
 
-    public void reativarPessoa(Pessoa pessoa) throws LudiBoxException{
+    public void reativarPessoa(int id) throws LudiBoxException{
         Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
-
-        if (pessoaAutenticada.getPerfil() == EnumPerfil.USUARIO) {
-            throw new LudiBoxException("Administração: ", "Ação exclusiva para administradores!", HttpStatus.UNAUTHORIZED);
-        }
-
+        Pessoa pessoa = pessoaRepository.findById(id).orElseThrow(() -> new LudiBoxException("ID: ", "Pessoa não encontrada!", HttpStatus.BAD_REQUEST));
 
         Pessoa pessoaAtivada = pessoaRepository.findById(pessoa.getId()).get();
         pessoaAtivada.setSituacao(EnumStatus.ATIVO);
         pessoaRepository.save(pessoaAtivada);
     }
 
-    public void bloquearPessoaFisica(Pessoa pessoa) throws LudiBoxException{
+    public void bloquearPessoaFisica(int id) throws LudiBoxException{
         Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
+        Pessoa pessoa = pessoaRepository.findById(id).orElseThrow(() -> new LudiBoxException("ID: ", "Pessoa não encontrada!", HttpStatus.BAD_REQUEST));
+
 
         if (pessoaAutenticada.getPerfil() == EnumPerfil.USUARIO) {
             throw new LudiBoxException("Administração: ", "Ação exclusiva para administradores!", HttpStatus.UNAUTHORIZED);
@@ -144,5 +168,10 @@ public class PessoaService {
         pessoaBloqueada.setSituacao(EnumStatus.BLOQUEADO);
         pessoaRepository.save(pessoaBloqueada);
     }
+
+    public Pessoa buscarPorId(int id){
+        return pessoaRepository.findById(id).orElseThrow(() -> new LudiBoxException("ID: ", "Usuário não encontrado!", HttpStatus.BAD_REQUEST));
+    }
+
 
 }
