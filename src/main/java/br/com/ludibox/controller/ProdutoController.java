@@ -33,4 +33,18 @@ public class ProdutoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao processar imagens");
         }
     }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> atualizarProduto(@PathVariable Integer id,
+                                                   @RequestPart("produto") @Valid Produto produto,
+                                                   @RequestPart(value = "imagens", required = false) List<MultipartFile> imagens) {
+        try {
+            produtoService.atualizar(id, produto, imagens);
+            return ResponseEntity.ok("Produto atualizado com sucesso");
+        } catch (LudiBoxException e) {
+            return ResponseEntity.status(e.getHttpStatus()).body("Não foi possível atualizar o produto: " + e.getMensagem());
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao processar imagens");
+        }
+    }
 }

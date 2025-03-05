@@ -2,7 +2,6 @@ package br.com.ludibox.service;
 
 import br.com.ludibox.auth.AuthenticationService;
 import br.com.ludibox.exception.LudiBoxException;
-import br.com.ludibox.model.entity.Endereco;
 import br.com.ludibox.model.entity.Pessoa;
 import br.com.ludibox.model.entity.Produto;
 import br.com.ludibox.model.repository.ProdutoRepository;
@@ -14,8 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProdutoService {
@@ -56,5 +55,48 @@ public class ProdutoService {
         produto.setImagens(imagensBase64);
 
         produtoRepository.save(produto);
+    }
+
+    public void atualizar(Integer id, @Valid Produto produtoAtualizado, List<MultipartFile> imagens) throws LudiBoxException, IOException {
+        Optional<Produto> produtoExistenteOpt = produtoRepository.findById(id);
+        if (produtoExistenteOpt.isEmpty()) {
+            throw new LudiBoxException("Produto não encontrado", "Produto com ID " + id + " não encontrado", HttpStatus.NOT_FOUND);
+        }
+
+        Produto produtoExistente = produtoExistenteOpt.get();
+
+        if (produtoAtualizado.getNome() == null || produtoAtualizado.getDescricao() == null || produtoAtualizado.getEstoque() == null || produtoAtualizado.getPreco() <= 0.0 || produtoAtualizado.getPreco() == null) {
+            throw new LudiBoxException("Campos obrigatórios", "Campos obrigatórios não foram completamente preenchidos", HttpStatus.BAD_REQUEST);
+        }
+
+        if (imagens != null && imagens.size() > MAX_IMAGENS) {
+            throw new LudiBoxException("Imagens", "Número máximo de imagens excedido. Máximo permitido: " + MAX_IMAGENS, HttpStatus.BAD_REQUEST);
+        }
+
+        List<String> imagensBase64 = new ArrayList<>();
+        if (imagens != null) {
+            for (MultipartFile imagem : imagens) {
+                if (imagem.getSize() > MAX_TAMANHO_IMAGEM) {
+                    throw new LudiBoxException("Imagens", "Tamanho máximo da imagem excedido. Máximo permitido: " + MAX_TAMANHO_IMAGEM + " bytes", HttpStatus.BAD_REQUEST);
+                }
+                String base64Imagem = imagemService.processarImagem(imagem);
+                imagensBase64.add(base64Imagem);
+            }
+        }
+
+        produtoExistente.setNome(produtoAtualizado.getNome());
+        produtoExistente.setDescricao(produtoAtualizado.getDescricao());
+        produtoExistente.setEstoque(produtoAtualizado.getEstoque());
+        produtoExistente.setPreco(produtoAtualizado.getPreco());
+        produtoExistente.setAltura(produtoAtualizado.getAltura());
+        produtoExistente.setLargura(produtoAtualizado.getLargura());
+        produtoExistente.setDatasIndisponiveis(produtoAtualizado.getDatasIndisponiveis());
+        produtoExistente.setStatus(produtoAtualizado.getStatus());
+
+        if (!imagensBase64.isEmpty()) {
+            produtoExistente.setImagens(imagensBase64);
+        }
+
+        produtoRepository.save(produtoExistente);
     }
 }
