@@ -52,6 +52,6 @@ public class Produto {
 
     @ElementCollection
     @CollectionTable(name = "produto_imagens", joinColumns = @JoinColumn(name = "produto_id"))
-    @Column(name = "imagem", columnDefinition = "LONGTEXT")
+    @Column(name = "imagem", length = 10485760)
     private List<String> imagens = new ArrayList<>();
 }

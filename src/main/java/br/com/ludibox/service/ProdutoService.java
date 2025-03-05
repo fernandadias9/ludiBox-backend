@@ -26,6 +26,9 @@ public class ProdutoService {
     @Autowired
     private AuthenticationService authService;
 
+    @Autowired
+    private ImagemService imagemService;
+
     private static final int MAX_IMAGENS = 5;
     private static final long MAX_TAMANHO_IMAGEM = 2 * 1024 * 1024;
 
@@ -41,11 +44,14 @@ public class ProdutoService {
         }
 
         List<String> imagensBase64 = new ArrayList<>();
-        for (MultipartFile imagem : imagens) {
-            if (imagem.getSize() > MAX_TAMANHO_IMAGEM) {
-                throw new LudiBoxException("Imagens", "Tamanho máximo da imagem excedido. Máximo permitido: " + MAX_TAMANHO_IMAGEM + " bytes", HttpStatus.BAD_REQUEST);
+        if (imagens != null) {
+            for (MultipartFile imagem : imagens) {
+                if (imagem.getSize() > MAX_TAMANHO_IMAGEM) {
+                    throw new LudiBoxException("Imagens", "Tamanho máximo da imagem excedido. Máximo permitido: " + MAX_TAMANHO_IMAGEM + " bytes", HttpStatus.BAD_REQUEST);
+                }
+                String base64Imagem = imagemService.processarImagem(imagem);
+                imagensBase64.add(base64Imagem);
             }
-            imagensBase64.add(Base64.getEncoder().encodeToString(imagem.getBytes()));
         }
         produto.setImagens(imagensBase64);
 
