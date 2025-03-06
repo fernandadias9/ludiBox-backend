@@ -37,8 +37,6 @@ public class ProdutoService {
         Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
         produto.setAnunciante(pessoaAutenticada);
 
-        validarCamposObrigatorios(produto);
-
         if (imagens != null && imagens.size() > MAX_IMAGENS) {
             throw new LudiBoxException("Imagens", "Número máximo de imagens excedido. Máximo permitido: " + MAX_IMAGENS, HttpStatus.BAD_REQUEST);
         }
@@ -66,8 +64,6 @@ public class ProdutoService {
         if (pessoaAutenticada.getPerfil() == EnumPerfil.USUARIO && pessoaAutenticada != produtoExistente.getAnunciante()) {
             throw new LudiBoxException("Atualização não permitida", "Apenas o anunciante pode atualizar o anúncio.", HttpStatus.UNAUTHORIZED);
         }
-
-        validarCamposObrigatorios(produtoAtualizado);
 
         if (imagens != null && imagens.size() > MAX_IMAGENS) {
             throw new LudiBoxException("Imagens", "Número máximo de imagens excedido. Máximo permitido: " + MAX_IMAGENS, HttpStatus.BAD_REQUEST);
@@ -144,12 +140,6 @@ public class ProdutoService {
         }
 
         this.produtoRepository.delete(produto);
-    }
-
-    protected void validarCamposObrigatorios(Produto produto) throws LudiBoxException {
-        if (produto.getNome() == null || produto.getDescricao() == null || produto.getEstoque() == null || produto.getPreco() <= 0.0 || produto.getPreco() == null) {
-            throw new LudiBoxException("Campos obrigatórios", "Campos obrigatórios não foram completamente preenchidos", HttpStatus.BAD_REQUEST);
-        }
     }
 
     protected Produto validarProduto(Integer id) throws LudiBoxException {
