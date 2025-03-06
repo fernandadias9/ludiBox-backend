@@ -4,6 +4,8 @@ import br.com.ludibox.auth.AuthenticationService;
 import br.com.ludibox.exception.LudiBoxException;
 import br.com.ludibox.model.entity.Pessoa;
 import br.com.ludibox.model.entity.Produto;
+import br.com.ludibox.model.enums.EnumPerfil;
+import br.com.ludibox.model.enums.StatusProduto;
 import br.com.ludibox.model.repository.ProdutoRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,5 +100,67 @@ public class ProdutoService {
         }
 
         produtoRepository.save(produtoExistente);
+    }
+
+    public void atualizarStatus(Integer id, StatusProduto novoStatus) throws LudiBoxException {
+        Pessoa pessoaAutenticada = this.authService.getPessoaAutenticada();
+
+        Optional<Produto> produtoOpt = produtoRepository.findById(id);
+        if (produtoOpt.isEmpty()) {
+            throw new LudiBoxException("Produto não encontrado", "Produto com ID " + id + " não encontrado", HttpStatus.NOT_FOUND);
+        }
+
+        Produto produto = produtoOpt.get();
+
+        if (pessoaAutenticada != produto.getAnunciante()) {
+            throw new LudiBoxException("Ação não autorizada.", "Apenas o anunciante pode ativar/desativar o anúncio.", HttpStatus.UNAUTHORIZED);
+        }
+
+        if (produto.getStatus() == StatusProduto.BLOQUEADO) {
+            throw new LudiBoxException("Ação inválida", "Somente administradores podem modificar o status de anúncios bloqueados", HttpStatus.UNAUTHORIZED);
+        }
+
+        produto.setStatus(novoStatus);
+
+        produtoRepository.save(produto);
+    }
+
+    public void atualizarBloqueio(Integer id) throws LudiBoxException {
+        this.authService.verificarPermissaoAdmin();
+
+        Optional<Produto> produtoOpt = produtoRepository.findById(id);
+
+        if (produtoOpt.isEmpty()) {
+            throw new LudiBoxException("Produto não encontrado", "Produto com ID " + id + " não encontrado", HttpStatus.NOT_FOUND);
+        }
+
+        Produto produto = produtoOpt.get();
+
+        StatusProduto statusProduto = produto.getStatus();
+
+        if (statusProduto == StatusProduto.BLOQUEADO) {
+            produto.setStatus(StatusProduto.ATIVO);
+        } else {
+            produto.setStatus(StatusProduto.BLOQUEADO);
+        }
+
+        produtoRepository.save(produto);
+    }
+
+    public void deletarProduto(Integer id) throws LudiBoxException {
+        Pessoa pessoaAutenticada = this.authService.getPessoaAutenticada();
+        Optional<Produto> produtoOpt = produtoRepository.findById(id);
+
+        if (produtoOpt.isEmpty()) {
+            throw new LudiBoxException("Anúncio", "Não encontrado", HttpStatus.NOT_FOUND);
+        }
+
+        Produto produto = produtoOpt.get();
+
+        if (pessoaAutenticada.getPerfil() == EnumPerfil.USUARIO && pessoaAutenticada != produto.getAnunciante()) {
+            throw new LudiBoxException("Exclusão não permitida", "Apenas o anunciante pode excluir o anúncio.", HttpStatus.UNAUTHORIZED);
+        }
+
+        this.produtoRepository.delete(produto);
     }
 }

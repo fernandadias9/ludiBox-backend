@@ -178,6 +178,4 @@ public class PessoaService {
     public Pessoa buscarPorId(int id){
         return pessoaRepository.findById(id).orElseThrow(() -> new LudiBoxException("ID: ", "Usuário não encontrado!", HttpStatus.BAD_REQUEST));
     }
-
-
 }

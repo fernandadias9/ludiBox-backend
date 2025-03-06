@@ -2,6 +2,7 @@ package br.com.ludibox.controller;
 
 import br.com.ludibox.exception.LudiBoxException;
 import br.com.ludibox.model.entity.Produto;
+import br.com.ludibox.model.enums.StatusProduto;
 import br.com.ludibox.service.ProdutoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,48 @@ public class ProdutoController {
             return ResponseEntity.status(e.getHttpStatus()).body("Não foi possível atualizar o produto: " + e.getMensagem());
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao processar imagens");
+        }
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<String> atualizarStatus(@PathVariable Integer id, @RequestParam StatusProduto status) {
+        String mensagemSucesso = "";
+        String mensagemErro = "";
+
+        if(status == StatusProduto.ATIVO) {
+            mensagemSucesso = "Anúncio ativado com sucesso";
+            mensagemErro = "Não foi possível ativar anúncio";
+        }
+
+        if(status == StatusProduto.INATIVO) {
+            mensagemSucesso = "Anúncio inativado com sucesso";
+            mensagemErro = "Não foi possível inativar anúncio";
+        }
+        try {
+            produtoService.atualizarStatus(id, status);
+            return ResponseEntity.ok(mensagemSucesso);
+        } catch (LudiBoxException e) {
+            return ResponseEntity.status(e.getHttpStatus()).body(mensagemErro + ": " + e.getMensagem());
+        }
+    }
+
+    @PutMapping("/bloqueio/{id}")
+    public ResponseEntity<String> atualizarBloqueio(@PathVariable Integer id) {
+        try {
+            produtoService.atualizarBloqueio(id);
+            return ResponseEntity.ok("Bloqueio atualizado com sucesso");
+        } catch (LudiBoxException e) {
+            return ResponseEntity.status(e.getHttpStatus()).body("Não foi possível atualizar bloqueio." + e.getMensagem());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deletarProduto(@PathVariable Integer id) {
+        try {
+            produtoService.deletarProduto(id);
+            return ResponseEntity.ok("Anúncio excluído com sucesso");
+        } catch (LudiBoxException e) {
+            return ResponseEntity.status(e.getHttpStatus()).body(e.getMensagem());
         }
     }
 }
