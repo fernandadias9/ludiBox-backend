@@ -36,9 +36,8 @@ public class ProdutoService {
     public void salvar(@Valid Produto produto, List<MultipartFile> imagens) throws LudiBoxException, IOException {
         Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
         produto.setAnunciante(pessoaAutenticada);
-        if (produto.getNome() == null || produto.getDescricao() == null || produto.getEstoque() == null || produto.getPreco() <= 0.0 || produto.getPreco() == null) {
-            throw new LudiBoxException("Campos obrigatórios", "Campos obrigatórios não foram completamente preenchidos", HttpStatus.BAD_REQUEST);
-        }
+
+        validarCamposObrigatorios(produto);
 
         if (imagens != null && imagens.size() > MAX_IMAGENS) {
             throw new LudiBoxException("Imagens", "Número máximo de imagens excedido. Máximo permitido: " + MAX_IMAGENS, HttpStatus.BAD_REQUEST);
@@ -60,16 +59,15 @@ public class ProdutoService {
     }
 
     public void atualizar(Integer id, @Valid Produto produtoAtualizado, List<MultipartFile> imagens) throws LudiBoxException, IOException {
-        Optional<Produto> produtoExistenteOpt = produtoRepository.findById(id);
-        if (produtoExistenteOpt.isEmpty()) {
-            throw new LudiBoxException("Produto não encontrado", "Produto com ID " + id + " não encontrado", HttpStatus.NOT_FOUND);
+        Pessoa pessoaAutenticada = this.authService.getPessoaAutenticada();
+
+        Produto produtoExistente = validarProduto(id);
+
+        if (pessoaAutenticada.getPerfil() == EnumPerfil.USUARIO && pessoaAutenticada != produtoExistente.getAnunciante()) {
+            throw new LudiBoxException("Atualização não permitida", "Apenas o anunciante pode atualizar o anúncio.", HttpStatus.UNAUTHORIZED);
         }
 
-        Produto produtoExistente = produtoExistenteOpt.get();
-
-        if (produtoAtualizado.getNome() == null || produtoAtualizado.getDescricao() == null || produtoAtualizado.getEstoque() == null || produtoAtualizado.getPreco() <= 0.0 || produtoAtualizado.getPreco() == null) {
-            throw new LudiBoxException("Campos obrigatórios", "Campos obrigatórios não foram completamente preenchidos", HttpStatus.BAD_REQUEST);
-        }
+        validarCamposObrigatorios(produtoAtualizado);
 
         if (imagens != null && imagens.size() > MAX_IMAGENS) {
             throw new LudiBoxException("Imagens", "Número máximo de imagens excedido. Máximo permitido: " + MAX_IMAGENS, HttpStatus.BAD_REQUEST);
@@ -105,12 +103,7 @@ public class ProdutoService {
     public void atualizarStatus(Integer id, StatusProduto novoStatus) throws LudiBoxException {
         Pessoa pessoaAutenticada = this.authService.getPessoaAutenticada();
 
-        Optional<Produto> produtoOpt = produtoRepository.findById(id);
-        if (produtoOpt.isEmpty()) {
-            throw new LudiBoxException("Produto não encontrado", "Produto com ID " + id + " não encontrado", HttpStatus.NOT_FOUND);
-        }
-
-        Produto produto = produtoOpt.get();
+        Produto produto = validarProduto(id);
 
         if (pessoaAutenticada != produto.getAnunciante()) {
             throw new LudiBoxException("Ação não autorizada.", "Apenas o anunciante pode ativar/desativar o anúncio.", HttpStatus.UNAUTHORIZED);
@@ -128,13 +121,7 @@ public class ProdutoService {
     public void atualizarBloqueio(Integer id) throws LudiBoxException {
         this.authService.verificarPermissaoAdmin();
 
-        Optional<Produto> produtoOpt = produtoRepository.findById(id);
-
-        if (produtoOpt.isEmpty()) {
-            throw new LudiBoxException("Produto não encontrado", "Produto com ID " + id + " não encontrado", HttpStatus.NOT_FOUND);
-        }
-
-        Produto produto = produtoOpt.get();
+        Produto produto = validarProduto(id);
 
         StatusProduto statusProduto = produto.getStatus();
 
@@ -149,18 +136,27 @@ public class ProdutoService {
 
     public void deletarProduto(Integer id) throws LudiBoxException {
         Pessoa pessoaAutenticada = this.authService.getPessoaAutenticada();
-        Optional<Produto> produtoOpt = produtoRepository.findById(id);
 
-        if (produtoOpt.isEmpty()) {
-            throw new LudiBoxException("Anúncio", "Não encontrado", HttpStatus.NOT_FOUND);
-        }
-
-        Produto produto = produtoOpt.get();
+        Produto produto = validarProduto(id);
 
         if (pessoaAutenticada.getPerfil() == EnumPerfil.USUARIO && pessoaAutenticada != produto.getAnunciante()) {
             throw new LudiBoxException("Exclusão não permitida", "Apenas o anunciante pode excluir o anúncio.", HttpStatus.UNAUTHORIZED);
         }
 
         this.produtoRepository.delete(produto);
+    }
+
+    protected void validarCamposObrigatorios(Produto produto) throws LudiBoxException {
+        if (produto.getNome() == null || produto.getDescricao() == null || produto.getEstoque() == null || produto.getPreco() <= 0.0 || produto.getPreco() == null) {
+            throw new LudiBoxException("Campos obrigatórios", "Campos obrigatórios não foram completamente preenchidos", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    protected Produto validarProduto(Integer id) throws LudiBoxException {
+        Optional<Produto> produtoOpt = produtoRepository.findById(id);
+        if (produtoOpt.isEmpty()) {
+            throw new LudiBoxException("Anúncio não encontrado", "Anúncio com ID " + id + " não encontrado", HttpStatus.NOT_FOUND);
+        }
+        return produtoOpt.get();
     }
 }
