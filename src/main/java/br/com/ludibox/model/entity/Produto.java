@@ -29,6 +29,8 @@ public class Produto {
 
     private int largura;
 
+    private int comprimento;
+
     @NotBlank
     @Size(min = 1, max = 300)
     private String descricao;
@@ -49,6 +51,10 @@ public class Produto {
     private Pessoa anunciante;
 
     private StatusProduto status = StatusProduto.ATIVO;
+
+    @ManyToOne
+    @JoinColumn(name = "id_endereco")
+    private Endereco endereco;
 
     @ElementCollection
     @CollectionTable(name = "produto_imagens", joinColumns = @JoinColumn(name = "produto_id"))

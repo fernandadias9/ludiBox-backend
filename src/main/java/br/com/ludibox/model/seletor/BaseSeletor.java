@@ -1,4 +1,4 @@
-	package br.com.ludibox.model.seletor;
+package br.com.ludibox.model.seletor;
 
 import java.time.LocalDate;
 import java.util.List;

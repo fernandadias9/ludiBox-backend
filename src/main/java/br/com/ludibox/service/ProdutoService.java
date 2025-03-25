@@ -2,6 +2,7 @@ package br.com.ludibox.service;
 
 import br.com.ludibox.auth.AuthenticationService;
 import br.com.ludibox.exception.LudiBoxException;
+import br.com.ludibox.model.dto.ProdutoListarDto;
 import br.com.ludibox.model.entity.Pessoa;
 import br.com.ludibox.model.entity.Produto;
 import br.com.ludibox.model.enums.EnumPerfil;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProdutoService {
@@ -30,7 +32,7 @@ public class ProdutoService {
     @Autowired
     private ImagemService imagemService;
 
-    private static final int MAX_IMAGENS = 5;
+    private static final int MAX_IMAGENS = 4;
     private static final long MAX_TAMANHO_IMAGEM = 2 * 1024 * 1024;
 
     public void salvar(@Valid Produto produto, List<MultipartFile> imagens) throws LudiBoxException, IOException {
@@ -86,6 +88,7 @@ public class ProdutoService {
         produtoExistente.setPreco(produtoAtualizado.getPreco());
         produtoExistente.setAltura(produtoAtualizado.getAltura());
         produtoExistente.setLargura(produtoAtualizado.getLargura());
+        produtoExistente.setComprimento(produtoAtualizado.getComprimento());
         produtoExistente.setDatasIndisponiveis(produtoAtualizado.getDatasIndisponiveis());
         produtoExistente.setStatus(produtoAtualizado.getStatus());
 
@@ -140,6 +143,31 @@ public class ProdutoService {
         }
 
         this.produtoRepository.delete(produto);
+    }
+
+    public List<ProdutoListarDto> buscarTodos() {
+        List<Produto> produtos = produtoRepository.findAll();
+
+        return produtos.stream()
+                .filter(produto -> produto.getStatus() == StatusProduto.ATIVO)
+                .map(produto -> {
+            ProdutoListarDto dto = new ProdutoListarDto();
+
+            dto.setNome(produto.getNome());
+            dto.setDataCadastro(produto.getDataCadastro());
+            dto.setAltura(produto.getAltura());
+            dto.setLargura(produto.getLargura());
+            dto.setComprimento(produto.getComprimento());
+            dto.setDescricao(produto.getDescricao());
+            dto.setEstoque(produto.getEstoque());
+            dto.setPreco(produto.getPreco());
+            dto.setDatasIndisponiveis(produto.getDatasIndisponiveis());
+            dto.setIdAnunciante(produto.getAnunciante().getId());
+            dto.setNomeAnunciante(produto.getAnunciante().getNome());
+            dto.setImagem(produto.getImagens().isEmpty() ? null : produto.getImagens().get(0));
+
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     protected Produto validarProduto(Integer id) throws LudiBoxException {
