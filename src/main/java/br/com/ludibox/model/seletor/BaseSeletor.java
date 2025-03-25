@@ -1,4 +1,4 @@
-	package br.com.ludibox.model.seletor;
+package br.com.ludibox.model.seletor;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -6,7 +6,9 @@ import java.util.List;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import lombok.Data;
 
+@Data
 public abstract class BaseSeletor {
 		
 		private int pagina;
@@ -27,22 +29,6 @@ public abstract class BaseSeletor {
 		
 		public int getOffset() {
 			return this.limite * (this.pagina - 1);
-		}
-		
-		public int getPagina() {
-			return pagina;
-		}
-	
-		public void setPagina(int pagina) {
-			this.pagina = pagina;
-		}
-	
-		public int getLimite() {
-			return limite;
-		}
-	
-		public void setLimite(int limite) {
-			this.limite = limite;
 		}
 		
 		public static void aplicarFiltroPeriodo(Root root, CriteriaBuilder cb, List<Predicate> predicates,
