@@ -1,6 +1,5 @@
 package br.com.ludibox.model.dto;
 
-import br.com.ludibox.model.entity.Pessoa;
 import lombok.Data;
 
 import java.time.LocalDate;
