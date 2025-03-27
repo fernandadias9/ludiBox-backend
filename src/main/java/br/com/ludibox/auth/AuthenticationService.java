@@ -1,6 +1,7 @@
 package br.com.ludibox.auth;
 
 import br.com.ludibox.model.entity.Pessoa;
+import br.com.ludibox.model.enums.EnumPerfil;
 import br.com.ludibox.model.repository.PessoaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -59,5 +60,11 @@ public class AuthenticationService {
 
 	}
 
+	public void verificarPermissaoAdmin() {
+		Pessoa pessoaAutenticada = getPessoaAutenticada();
 
+		if (pessoaAutenticada.getPerfil() == EnumPerfil.USUARIO) {
+			throw new LudiBoxException("Administração: ", "Ação exclusiva para administradores!", HttpStatus.UNAUTHORIZED);
+		}
+	}
 }

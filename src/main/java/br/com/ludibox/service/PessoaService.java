@@ -189,6 +189,4 @@ public class PessoaService {
         return perfil;
     }
 
-
-
 }
