@@ -2,12 +2,11 @@ package br.com.ludibox.service;
 
 import br.com.ludibox.auth.AuthenticationService;
 import br.com.ludibox.exception.LudiBoxException;
+import br.com.ludibox.model.dto.PerfilDTO;
 import br.com.ludibox.model.entity.Pessoa;
-import br.com.ludibox.model.enums.EnumDocumento;
 import br.com.ludibox.model.enums.EnumPerfil;
 import br.com.ludibox.model.enums.EnumStatus;
 import br.com.ludibox.model.repository.PessoaRepository;
-import jakarta.validation.constraints.Size;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -178,4 +177,16 @@ public class PessoaService {
     public Pessoa buscarPorId(int id){
         return pessoaRepository.findById(id).orElseThrow(() -> new LudiBoxException("ID: ", "Usuário não encontrado!", HttpStatus.BAD_REQUEST));
     }
+
+    public PerfilDTO buscarPerfilPorId(int id){
+        Pessoa pessoa = pessoaRepository.findById(id).orElseThrow(() -> new LudiBoxException("ID: ", "Usuário não encontrado!", HttpStatus.BAD_REQUEST));
+
+        PerfilDTO perfil = new PerfilDTO();
+        perfil.setNome(pessoa.getNome());
+        perfil.setId(pessoa.getId());
+        perfil.setImagemUsuarioEmBase64(pessoa.getImagemUsuarioEmBase64());
+
+        return perfil;
+    }
+
 }
