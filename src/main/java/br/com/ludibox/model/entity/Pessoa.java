@@ -102,7 +102,26 @@ public class Pessoa implements UserDetails {
         return this.email;
     }
 
+    @Override
+    public boolean isAccountNonExpired() {
+        return false;
+    }
 
+    @Override
+    public boolean isAccountNonLocked() {
+        return false;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return false;
+    }
+
+
+    @Override
+    public boolean isEnabled() {
+        return this.situacao == EnumStatus.ATIVO;
+    }
 
 
 }
