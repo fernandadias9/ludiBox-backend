@@ -31,6 +31,8 @@ public class Produto {
 
     private int comprimento;
 
+    private int pesoSuportado;
+
     @NotBlank
     @Size(min = 1, max = 300)
     private String descricao;

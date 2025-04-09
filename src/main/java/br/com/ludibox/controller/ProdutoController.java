@@ -1,6 +1,7 @@
 package br.com.ludibox.controller;
 
 import br.com.ludibox.exception.LudiBoxException;
+import br.com.ludibox.model.dto.ProdutoDetalheDto;
 import br.com.ludibox.model.dto.ProdutoListarDto;
 import br.com.ludibox.model.entity.Produto;
 import br.com.ludibox.model.enums.StatusProduto;
@@ -96,5 +97,10 @@ public class ProdutoController {
     public ResponseEntity<List<ProdutoListarDto>> listarTodos() {
         List<ProdutoListarDto> produtos = produtoService.buscarTodos();
         return ResponseEntity.ok(produtos);
+    }
+
+    @GetMapping("/buscar/{id}")
+    public ProdutoDetalheDto buscarProduto(@PathVariable Integer id) {
+        return produtoService.buscar(id);
     }
 }
