@@ -2,6 +2,7 @@ package br.com.ludibox.service;
 
 import br.com.ludibox.auth.AuthenticationService;
 import br.com.ludibox.exception.LudiBoxException;
+import br.com.ludibox.model.dto.ProdutoDetalheDto;
 import br.com.ludibox.model.dto.ProdutoListarDto;
 import br.com.ludibox.model.entity.Pessoa;
 import br.com.ludibox.model.entity.Produto;
@@ -153,21 +154,41 @@ public class ProdutoService {
                 .map(produto -> {
             ProdutoListarDto dto = new ProdutoListarDto();
 
+            dto.setId(produto.getId());
             dto.setNome(produto.getNome());
-            dto.setDataCadastro(produto.getDataCadastro());
-            dto.setAltura(produto.getAltura());
-            dto.setLargura(produto.getLargura());
-            dto.setComprimento(produto.getComprimento());
-            dto.setDescricao(produto.getDescricao());
-            dto.setEstoque(produto.getEstoque());
             dto.setPreco(produto.getPreco());
-            dto.setDatasIndisponiveis(produto.getDatasIndisponiveis());
             dto.setIdAnunciante(produto.getAnunciante().getId());
             dto.setNomeAnunciante(produto.getAnunciante().getNome());
+            dto.setImagemAnunciante(produto.getAnunciante().getImagemUsuarioEmBase64());
             dto.setImagem(produto.getImagens().isEmpty() ? null : produto.getImagens().get(0));
 
             return dto;
         }).collect(Collectors.toList());
+    }
+
+    public ProdutoDetalheDto buscar(Integer id) {
+        Produto produto = produtoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+
+        ProdutoDetalheDto dto = new ProdutoDetalheDto();
+
+        dto.setId(produto.getId());
+        dto.setNome(produto.getNome());
+        dto.setDataCadastro(produto.getDataCadastro());
+        dto.setAltura(produto.getAltura());
+        dto.setLargura(produto.getLargura());
+        dto.setComprimento(produto.getComprimento());
+        dto.setPesoSuportado(produto.getPesoSuportado());
+        dto.setDescricao(produto.getDescricao());
+        dto.setEstoque(produto.getEstoque());
+        dto.setPreco(produto.getPreco());
+        dto.setDatasIndisponiveis(produto.getDatasIndisponiveis());
+        dto.setIdAnunciante(produto.getAnunciante().getId());
+        dto.setNomeAnunciante(produto.getAnunciante().getNome());
+        dto.setImagemAnunciante(produto.getAnunciante().getImagemUsuarioEmBase64());
+        dto.setImagens(produto.getImagens());
+
+        return dto;
     }
 
     protected Produto validarProduto(Integer id) throws LudiBoxException {
