@@ -16,7 +16,7 @@ public class EmailService {
         mensagem.setTo(destino);
         mensagem.setSubject("Recuperação de Senha - Ludibox");
         mensagem.setText("Olá!\n\nSua nova senha é: " + novaSenha +
-                "\n\nRecomendamos que você altere essa senha após fazer login no sistema.\n\nEquipe Ludibox");
+                "\n\nRecomendamos que você altere essa senha após fazer login no sistema.\n\nEquipe Ludibox!");
         envioEmail.send(mensagem);
     }
 }
