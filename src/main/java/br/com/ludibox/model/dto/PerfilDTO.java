@@ -8,5 +8,5 @@ public class PerfilDTO {
     private Integer id;
     private String nome;
     private String imagemUsuarioEmBase64;
-
+    private String email;
 }
