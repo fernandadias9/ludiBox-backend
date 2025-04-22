@@ -149,7 +149,7 @@ public class ProdutoService {
         List<Produto> produtos = produtoRepository.findAll();
 
         return produtos.stream()
-                .filter(produto -> produto.getStatus() == StatusProduto.ATIVO)
+                .filter(produto -> produto.getStatus() != StatusProduto.ATIVO)
                 .map(produto -> {
             ProdutoListarDto dto = new ProdutoListarDto();
 

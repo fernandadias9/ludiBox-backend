@@ -59,8 +59,6 @@ public class EnderecoService {
     	return enderecoRepository.save(endereco);
     }
 
-
-
 	public Endereco buscarPorId(int id) {
 		return enderecoRepository.findById(id).orElseThrow(() -> new LudiBoxException("Endereço com ID: " + id, " Não foi encontrado", HttpStatus.BAD_REQUEST));
 	}
