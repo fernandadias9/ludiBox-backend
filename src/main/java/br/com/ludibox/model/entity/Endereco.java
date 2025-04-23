@@ -37,6 +37,8 @@ public class Endereco {
 
 		private Integer numero;
 
+		private Boolean semNumero;
+
 		private String complemento;
 		
 		@NotBlank(message = "Bairro é obrigatório")
