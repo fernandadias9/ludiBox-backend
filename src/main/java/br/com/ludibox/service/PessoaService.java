@@ -1,6 +1,7 @@
 package br.com.ludibox.service;
 
 import br.com.ludibox.auth.AuthenticationService;
+import br.com.ludibox.auth.RSAPasswordEncoder;
 import br.com.ludibox.exception.LudiBoxException;
 import br.com.ludibox.model.dto.PerfilDTO;
 import br.com.ludibox.model.entity.Pessoa;
@@ -31,6 +32,12 @@ public class PessoaService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private RSAPasswordEncoder passwordRsa;
+
+
+
 
 
     public void salvarImagemPessoa(MultipartFile imagem, Integer idPessoa) throws LudiBoxException {
@@ -113,9 +120,9 @@ public class PessoaService {
 
         for (Map.Entry<String, Object> entry : pessoaDetails.entrySet()) {
             try {
-                Field field = Pessoa.class.getDeclaredField(entry.getKey());  
-                field.setAccessible(true);  
-                
+                Field field = Pessoa.class.getDeclaredField(entry.getKey());
+                field.setAccessible(true);
+
                 field.set(pessoa, entry.getValue());
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 throw new LudiBoxException("Erro", "Campo inválido ou não acessível: " + entry.getKey(), HttpStatus.BAD_REQUEST);
@@ -181,10 +188,16 @@ public class PessoaService {
     public PerfilDTO buscarPerfilPorId(int id){
         Pessoa pessoa = pessoaRepository.findById(id).orElseThrow(() -> new LudiBoxException("ID: ", "Usuário não encontrado!", HttpStatus.BAD_REQUEST));
 
+
+
         PerfilDTO perfil = new PerfilDTO();
         perfil.setNome(pessoa.getNome());
         perfil.setId(pessoa.getId());
         perfil.setImagemUsuarioEmBase64(pessoa.getImagemUsuarioEmBase64());
+        perfil.setEmail(pessoa.getEmail());
+        perfil.setSenha(passwordRsa.decode(pessoa.getPassword()));
+        perfil.setTelefone(pessoa.getTelefone());
+        perfil.setValorDocumento(pessoa.getValorDocumento());
 
         return perfil;
     }
