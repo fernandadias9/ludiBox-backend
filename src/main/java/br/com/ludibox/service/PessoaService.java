@@ -88,7 +88,6 @@ public class PessoaService {
         return email;
     }
 
-
     public void verificarPessoaExistente(Pessoa pessoa) throws LudiBoxException {
         List<Pessoa> pessoas = pessoaRepository.findAll();
 
