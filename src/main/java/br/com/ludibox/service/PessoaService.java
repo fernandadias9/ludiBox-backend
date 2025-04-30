@@ -53,6 +53,7 @@ public class PessoaService {
     public Pessoa salvar(Pessoa pessoa) throws LudiBoxException {
         verificarPessoaExistente(pessoa);
         pessoa.setTelefone(validarTelefone(pessoa.getTelefone()));
+        pessoa.setEmail(validarEmail(pessoa.getEmail()));
         String senhaCifrada = passwordEncoder.encode(pessoa.getSenha());
         pessoa.setSenha(senhaCifrada);
 
@@ -63,14 +64,28 @@ public class PessoaService {
         if (telefone == null || telefone.isBlank()) {
             throw new LudiBoxException("Telefone: ", "Número não pode estar vazio!", HttpStatus.BAD_REQUEST);
         }
-
-        telefone = telefone.replaceAll("[^0-9]", ""); // Remove caracteres não numéricos
-
+        if (!telefone.matches("^[0-9()\\s-]+$")) {
+            throw new LudiBoxException("Telefone: ", "Número contém caracteres inválidos!", HttpStatus.BAD_REQUEST);
+        }
+        telefone = telefone.replaceAll("[^0-9]", "");
         if (telefone.length() != 10 && telefone.length() != 11) {
             throw new LudiBoxException("Telefone: ", "Número inserido é inválido!", HttpStatus.BAD_REQUEST);
         }
 
         return telefone;
+    }
+
+    private String validarEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new LudiBoxException("Email: ", "Email não pode estar vazio!", HttpStatus.BAD_REQUEST);
+        }
+        String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$";
+
+        if (!email.matches(regex)) {
+            throw new LudiBoxException("Email: ", "Email inserido é inválido!", HttpStatus.BAD_REQUEST);
+        }
+
+        return email;
     }
 
 
@@ -117,7 +132,6 @@ public class PessoaService {
             throw new LudiBoxException("Erro: ", "Usuários só podem alterar seus próprios dados!", HttpStatus.UNAUTHORIZED);
         }
 
-
         for (Map.Entry<String, Object> entry : pessoaDetails.entrySet()) {
             try {
                 Field field = Pessoa.class.getDeclaredField(entry.getKey());
@@ -128,6 +142,9 @@ public class PessoaService {
                 throw new LudiBoxException("Erro", "Campo inválido ou não acessível: " + entry.getKey(), HttpStatus.BAD_REQUEST);
             }
         }
+
+        pessoa.setTelefone(validarTelefone(pessoa.getTelefone()));
+        pessoa.setEmail(validarEmail(pessoa.getEmail()));
 
         return pessoaRepository.save(pessoa);
     }
