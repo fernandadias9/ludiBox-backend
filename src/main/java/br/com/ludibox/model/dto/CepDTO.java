@@ -10,7 +10,7 @@ public class CepDTO {
 
     private String cep;
 
-    private String logadouro;
+    private String logradouro;
 
     private String complemento;
 
