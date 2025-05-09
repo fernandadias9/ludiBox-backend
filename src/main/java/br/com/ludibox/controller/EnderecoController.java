@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -58,8 +59,16 @@ public class EnderecoController {
 		CepDTO cepDTO = cepService.buscarEnderecoPorCep(cep);
 		return cepDTO;
 	}
-    
-	
-	
+
+	@GetMapping("/pessoa/{pessoaId}")
+	public List<Endereco> buscarEnderecosPorPessoa(@PathVariable Integer pessoaId) {
+		return enderecoService.listarEnderecosPorPessoa(pessoaId);
+	}
+
+	@DeleteMapping("/deletar-endereco/{id}")
+	public ResponseEntity<Void> deletarEndereco(@PathVariable Integer id) throws LudiBoxException {
+		enderecoService.deletar(id);
+		return ResponseEntity.noContent().build();
+	}
 
 }

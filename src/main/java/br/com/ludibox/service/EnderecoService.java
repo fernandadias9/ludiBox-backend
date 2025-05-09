@@ -12,6 +12,7 @@ import br.com.ludibox.model.entity.Endereco;
 import br.com.ludibox.model.repository.EnderecoRepository;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -31,8 +32,7 @@ public class EnderecoService {
 
 	public Endereco salvarEnderecoParaPessoa(Endereco novo) throws LudiBoxException {
 		Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
-		Endereco enderecoCepValidado = new Endereco();
-		enderecoCepValidado = cepService.validarCep(novo);
+		Endereco enderecoCepValidado = cepService.validarCep(novo);
 		novo.setPessoa(pessoaAutenticada);
 		pessoaAutenticada.getEnderecos().add(enderecoCepValidado);
 
@@ -59,9 +59,24 @@ public class EnderecoService {
     	return enderecoRepository.save(endereco);
     }
 
-
-
 	public Endereco buscarPorId(int id) {
 		return enderecoRepository.findById(id).orElseThrow(() -> new LudiBoxException("Endereço com ID: " + id, " Não foi encontrado", HttpStatus.BAD_REQUEST));
 	}
+
+	public List<Endereco> listarEnderecosPorPessoa(Integer idPessoa) {
+		return enderecoRepository.findByPessoaId(idPessoa);
+	}
+
+	public void deletar(Integer idEndereco) throws LudiBoxException {
+		Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
+		Endereco endereco = enderecoRepository.findById(idEndereco)
+				.orElseThrow(() -> new LudiBoxException("Endereço com ID: " + idEndereco, " não foi encontrado", HttpStatus.BAD_REQUEST));
+
+		if (!endereco.getPessoa().getId().equals(pessoaAutenticada.getId())) {
+			throw new LudiBoxException("Endereço: ", "Usuário não autorizado a deletar este endereço!", HttpStatus.FORBIDDEN);
+		}
+
+		enderecoRepository.delete(endereco);
+	}
+
 }
