@@ -1,6 +1,7 @@
 package br.com.ludibox.service;
 
 import br.com.ludibox.auth.AuthenticationService;
+import br.com.ludibox.auth.RSAPasswordEncoder;
 import br.com.ludibox.exception.LudiBoxException;
 import br.com.ludibox.model.dto.PerfilDTO;
 import br.com.ludibox.model.entity.Pessoa;
@@ -32,6 +33,12 @@ public class PessoaService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private RSAPasswordEncoder passwordRsa;
+
+
+
+
 
     public void salvarImagemPessoa(MultipartFile imagem, Integer idPessoa) throws LudiBoxException {
 
@@ -46,6 +53,7 @@ public class PessoaService {
     public Pessoa salvar(Pessoa pessoa) throws LudiBoxException {
         verificarPessoaExistente(pessoa);
         pessoa.setTelefone(validarTelefone(pessoa.getTelefone()));
+        pessoa.setEmail(validarEmail(pessoa.getEmail()));
         String senhaCifrada = passwordEncoder.encode(pessoa.getSenha());
         pessoa.setSenha(senhaCifrada);
 
@@ -56,9 +64,10 @@ public class PessoaService {
         if (telefone == null || telefone.isBlank()) {
             throw new LudiBoxException("Telefone: ", "Número não pode estar vazio!", HttpStatus.BAD_REQUEST);
         }
-
-        telefone = telefone.replaceAll("[^0-9]", ""); // Remove caracteres não numéricos
-
+        if (!telefone.matches("^[0-9()\\s-]+$")) {
+            throw new LudiBoxException("Telefone: ", "Número contém caracteres inválidos!", HttpStatus.BAD_REQUEST);
+        }
+        telefone = telefone.replaceAll("[^0-9]", "");
         if (telefone.length() != 10 && telefone.length() != 11) {
             throw new LudiBoxException("Telefone: ", "Número inserido é inválido!", HttpStatus.BAD_REQUEST);
         }
@@ -66,6 +75,18 @@ public class PessoaService {
         return telefone;
     }
 
+    private String validarEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new LudiBoxException("Email: ", "Email não pode estar vazio!", HttpStatus.BAD_REQUEST);
+        }
+        String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$";
+
+        if (!email.matches(regex)) {
+            throw new LudiBoxException("Email: ", "Email inserido é inválido!", HttpStatus.BAD_REQUEST);
+        }
+
+        return email;
+    }
 
     public void verificarPessoaExistente(Pessoa pessoa) throws LudiBoxException {
         List<Pessoa> pessoas = pessoaRepository.findAll();
@@ -110,17 +131,19 @@ public class PessoaService {
             throw new LudiBoxException("Erro: ", "Usuários só podem alterar seus próprios dados!", HttpStatus.UNAUTHORIZED);
         }
 
-
         for (Map.Entry<String, Object> entry : pessoaDetails.entrySet()) {
             try {
-                Field field = Pessoa.class.getDeclaredField(entry.getKey());  
-                field.setAccessible(true);  
-                
+                Field field = Pessoa.class.getDeclaredField(entry.getKey());
+                field.setAccessible(true);
+
                 field.set(pessoa, entry.getValue());
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 throw new LudiBoxException("Erro", "Campo inválido ou não acessível: " + entry.getKey(), HttpStatus.BAD_REQUEST);
             }
         }
+
+        pessoa.setTelefone(validarTelefone(pessoa.getTelefone()));
+        pessoa.setEmail(validarEmail(pessoa.getEmail()));
 
         return pessoaRepository.save(pessoa);
     }
@@ -181,10 +204,16 @@ public class PessoaService {
     public PerfilDTO buscarPerfilPorId(int id){
         Pessoa pessoa = pessoaRepository.findById(id).orElseThrow(() -> new LudiBoxException("ID: ", "Usuário não encontrado!", HttpStatus.BAD_REQUEST));
 
+
+
         PerfilDTO perfil = new PerfilDTO();
         perfil.setNome(pessoa.getNome());
         perfil.setId(pessoa.getId());
         perfil.setImagemUsuarioEmBase64(pessoa.getImagemUsuarioEmBase64());
+        perfil.setEmail(pessoa.getEmail());
+        perfil.setSenha(passwordRsa.decode(pessoa.getPassword()));
+        perfil.setTelefone(pessoa.getTelefone());
+        perfil.setValorDocumento(pessoa.getValorDocumento());
 
         return perfil;
     }
