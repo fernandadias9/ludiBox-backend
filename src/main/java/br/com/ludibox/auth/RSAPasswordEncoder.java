@@ -52,4 +52,24 @@ public class RSAPasswordEncoder implements PasswordEncoder {
             throw new RuntimeException("Erro ao decifrar a senha com RSA", e);
         }
     }
+
+
+
+    public String decode(String encodedPassword) {
+        try {
+            // Decodificar o texto criptografado em Base64
+            byte[] encryptedBytes = Base64.getDecoder().decode(encodedPassword);
+
+            // Decifrar a senha com a chave privada
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+            byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
+
+            // Comparar a senha original com a decifrada
+            String decryptedPassword = new String(decryptedBytes, StandardCharsets.UTF_8);
+            return decryptedPassword;
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao decifrar a senha com RSA", e);
+        }
+    }
 }

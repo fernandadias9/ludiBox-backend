@@ -6,9 +6,11 @@ import org.springframework.stereotype.Repository;
 
 import br.com.ludibox.model.entity.Endereco;
 
+import java.util.List;
+
 @Repository
 public interface EnderecoRepository extends 
 	JpaRepository<Endereco, Integer>, JpaSpecificationExecutor<Endereco>{
-	
 
+	List<Endereco> findByPessoaId(Integer idPessoa);
 }

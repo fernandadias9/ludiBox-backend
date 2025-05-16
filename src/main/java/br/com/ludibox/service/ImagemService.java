@@ -12,7 +12,6 @@ import br.com.ludibox.exception.LudiBoxException;
 @Service
 public class ImagemService {
 
-	
 	public String processarImagem(MultipartFile file) throws LudiBoxException {
         // Converte MultipartFile em byte[]
         byte[] imagemBytes;
@@ -27,5 +26,4 @@ public class ImagemService {
         
         return base64Imagem;
     }
-	
 }
