@@ -39,23 +39,22 @@ public class SecurityConfig {
 
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		//Stateless -> não guarda o estado da aplicação (padrão usado no REST)
-		//Stateful -> guarda o estado da aplicação
-		//https://medium.com/exactaworks/stateless-vs-stateful-f596a6b6471d
+		// Configuração de CORS e CSRF
 		http
-		.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-		.csrf(csrf -> csrf.disable())
-		.authorizeHttpRequests(
-				//Hierarquia de permissões e bloqueios
-				auth -> auth
-				//URLs liberadas
-				.requestMatchers("/auth/*", "/public/**", "/produto/listar", "/produto/buscar/*").permitAll()
-
-				//Todas as demais são bloqueadas
-				.anyRequest().authenticated())
-		.httpBasic(Customizer.withDefaults())
-		.oauth2ResourceServer(
-				conf -> conf.jwt(Customizer.withDefaults()));
+				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+				.csrf(csrf -> csrf.disable())
+				.authorizeHttpRequests(auth -> auth
+						// Definir permissões para diferentes perfis de usuários
+						.requestMatchers("/auth/*", "/public/**", "/produto/listar", "/produto/buscar/*").permitAll()
+						// Define que administradores podem acessar somente as URLs que começam com "/admin"
+						.requestMatchers("/admin/**").hasRole("ADMINISTRADOR")
+						// Define que usuários comuns podem acessar somente as URLs que começam com "/usuario"
+						.requestMatchers("/usuario/**").hasRole("USUARIO")
+						// Qualquer outra URL exige autenticação
+						.anyRequest().authenticated()
+				)
+				.httpBasic(Customizer.withDefaults())
+				.oauth2ResourceServer(conf -> conf.jwt(Customizer.withDefaults()));
 
 		return http.build();
 	}
@@ -65,12 +64,12 @@ public class SecurityConfig {
 		CorsConfiguration configuration = new CorsConfiguration();
 		configuration.setAllowedOrigins(List.of("http://localhost:4200")); // Libera a origem do Angular
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); // Métodos HTTP permitidos
-		configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Access-Control-Allow-Origin", 
-												"Access-Control-Allow-Headers","Access-Control-Expose-Headers",
-												"Accept","Origin","X-Requested-With","Access-Control-Request-Method",	
-												"Access-Control-Request-Headers", "Access-Control-Allow-Credentials",
-												"Content-Length","Content-Encoding","Connection"
-				)); // Cabeçalhos permitidos
+		configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Access-Control-Allow-Origin",
+				"Access-Control-Allow-Headers","Access-Control-Expose-Headers",
+				"Accept","Origin","X-Requested-With","Access-Control-Request-Method",
+				"Access-Control-Request-Headers", "Access-Control-Allow-Credentials",
+				"Content-Length","Content-Encoding","Connection"
+		)); // Cabeçalhos permitidos
 
 		configuration.setAllowCredentials(true); // Permite envio de credenciais (cookies, por exemplo)
 		configuration.setAllowedOriginPatterns(List.of("http://localhost:4200/*"));
@@ -96,6 +95,6 @@ public class SecurityConfig {
 	PasswordEncoder passwordEncoder(){
 		return new RSAPasswordEncoder(publicKey, privateKey);
 	}
-	
+
 
 }

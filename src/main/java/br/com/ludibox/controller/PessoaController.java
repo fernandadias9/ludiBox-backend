@@ -9,6 +9,7 @@ import io.jsonwebtoken.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,7 +28,7 @@ public class PessoaController {
     @Autowired
     private AuthenticationService authService;
 
-
+    @PreAuthorize("hasAuthority('USUARIO')")
     @PostMapping("/{idPessoa}/upload")
     public void UploadPessoa(@RequestParam("imagem") MultipartFile imagem, @PathVariable Integer idPessoa)
             throws LudiBoxException, IOException {
@@ -43,12 +44,12 @@ public class PessoaController {
         pessoaService.salvarImagemPessoa(imagem, idPessoa);
 
     }
-
+    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
     @PostMapping("/cadastrar_adm")
     public ResponseEntity<Pessoa> cadastrarAdm(@RequestBody Pessoa pessoa) throws LudiBoxException{
         return ResponseEntity.ok(pessoaService.cadastrarAdm(pessoa));
     }
-
+    @PreAuthorize("hasAuthority('USUARIO') or hasAuthority('ADMINISTRADOR')")
     @PatchMapping("/atualizar/{id}")
     public ResponseEntity<Pessoa> atualizarPessoa(
             @PathVariable int id,
@@ -69,28 +70,28 @@ public class PessoaController {
         return ResponseEntity.ok(pessoa);
     }
 
-
+    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
     @PutMapping("/desativar/{id}")
     public void desativarPessoa(@PathVariable int id) throws LudiBoxException {
         pessoaService.desativarPessoa(id);
     }
-
+    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
     @PutMapping("/reativar/{id}")
     public void reativarPessoa(@PathVariable int id) throws LudiBoxException {
         pessoaService.reativarPessoa(id);
     }
-
+    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
     @PutMapping("/bloquear/{id}")
     public void bloquearPessoa(@PathVariable int id) throws LudiBoxException {
         pessoaService.bloquearPessoaFisica(id);
     }
-
+    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
     @GetMapping
     public List<Pessoa> buscarTodasPessoas() throws LudiBoxException{
         List<Pessoa> pessoas = pessoaService.buscarTodos();
         return pessoas;
     }
-
+    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
     @GetMapping("/buscar_perfil/{id}")
     public PerfilDTO buscarPerfilPorId(@PathVariable int id) {
         PerfilDTO perfil = pessoaService.buscarPerfilPorId(id);

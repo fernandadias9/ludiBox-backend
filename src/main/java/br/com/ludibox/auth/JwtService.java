@@ -59,7 +59,7 @@ public class JwtService {
 				.issuedAt(now)
 				.expiresAt(now.plusSeconds(dezHorasEmSegundo))
 				.subject(authentication.getName())
-				.claim("roles", rles)
+				.claim("roles", pessoaAutenticada.getPerfil())
 				.claim("id", pessoaAutenticada.getId())
 				.build();
 
