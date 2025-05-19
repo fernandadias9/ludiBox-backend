@@ -8,36 +8,36 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-
 @RestController
 @RequestMapping("/public/ia")
 public class ModeradorIaController {
 
-    @Autowired
-    private ModeradorIA moderadorIA;
+    private final ModeradorIA moderadorIA;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> criarProduto(@RequestPart("produto") @Valid Produto produto,
-                                               @RequestPart("imagens") List<MultipartFile> imagens) {
-        try {
-            moderadorIA.salvarProdutoValidandoComIA(produto, imagens);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Anúncio criado com sucesso");
-        } catch (LudiBoxException e) {
-            return ResponseEntity.status(e.getHttpStatus()).body("Não foi possível criar anúncio: " + e.getMensagem());
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao processar imagens");
-        }
+    @Autowired
+    public ModeradorIaController(ModeradorIA moderadorIA) {
+        this.moderadorIA = moderadorIA;
     }
 
-    @PostMapping
-    public String testarIA(@RequestBody Produto produto) {
-        return moderadorIA.processarTexto(produto);
+    @PostMapping(path = "/testar", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> testarIA(@RequestBody Produto produtoOriginal) {
+        try {
+            Produto produtoAtualizado = moderadorIA.validarConteudoProduto(produtoOriginal);
+            return ResponseEntity.ok(produtoAtualizado);
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(Map.of("erro", "Violação das diretrizes", "detalhes", e.getReason()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("erro", "Erro ao processar com IA", "detalhes", e.getMessage()));
+        }
     }
 }
