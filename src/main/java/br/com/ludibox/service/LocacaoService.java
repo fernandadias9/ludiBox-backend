@@ -5,8 +5,10 @@ import br.com.ludibox.model.enums.StatusLocacao;
 import br.com.ludibox.model.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,6 +35,11 @@ public class LocacaoService {
     private EnderecoRepository enderecoRepository;
 
     public Locacao abrirNovaLocacao(Locacao locacao) {
+        Optional<Locacao> locacaoExistente = this.buscarLocacaoPendentePorUsuarioId(locacao.getLocador().getId());
+        if (locacaoExistente.isPresent()) {
+            throw new IllegalStateException("Erro ao iniciar locação.");
+        }
+
         if (locacao.getProdutos() == null || locacao.getProdutos().size() != 1) {
             throw new IllegalArgumentException("A locação inicial deve conter exatamente um produto.");
         }
@@ -234,5 +241,27 @@ public class LocacaoService {
 
     public Optional<Locacao> buscarLocacaoPendentePorUsuarioId(Integer usuarioId) {
         return locacaoRepository.findByUsuarioIdAndStatusPendente(usuarioId);
+    }
+
+    public Locacao buscarPorId(Integer id) {
+        return locacaoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Locação não encontrada"));
+    }
+
+    @Transactional
+    public void finalizarLocacao(Integer locacaoId, Integer enderecoId, Integer locadorId) {
+        Locacao locacao = locacaoRepository.findById(locacaoId)
+                .orElseThrow(() -> new RuntimeException("Locação não encontrada"));
+
+        if (!locacao.getLocador().getId().equals(locadorId)) {
+            throw new RuntimeException("Locação não pertence ao usuário");
+        }
+
+        escolherEnderecoEntrega(locacaoId, enderecoId, locadorId);
+
+        locacao.setStatus(StatusLocacao.PAGO);
+        locacao.setDataHoraPagamento(LocalDateTime.now());
+
+        locacaoRepository.save(locacao);
     }
 }

@@ -79,4 +79,8 @@ public class EnderecoService {
 		enderecoRepository.delete(endereco);
 	}
 
+	public Endereco buscarPorId(Integer id) {
+		return enderecoRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Endereço não encontrado com id: " + id));
+	}
 }
