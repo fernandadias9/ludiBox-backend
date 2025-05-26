@@ -71,4 +71,9 @@ public class EnderecoController {
 		return ResponseEntity.noContent().build();
 	}
 
+	@GetMapping("/{id}")
+	public ResponseEntity<Endereco> buscarPorId(@PathVariable Integer id) {
+		Endereco endereco = enderecoService.buscarPorId(id);
+		return ResponseEntity.ok(endereco);
+	}
 }

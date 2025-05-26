@@ -78,4 +78,17 @@ public class LocacaoController {
                 .map(loc -> ResponseEntity.ok(loc))
                 .orElseGet(() -> ResponseEntity.ok().body(null));
     }
+
+    @GetMapping("/{id}")
+    public Locacao buscarPorId(@PathVariable Integer id) {
+        return locacaoService.buscarPorId(id);
+    }
+
+    @PostMapping("/finalizar/{locacaoId}/{enderecoId}/{locadorId}")
+    public ResponseEntity<Void> finalizarLocacao(@PathVariable Integer locacaoId,
+                                                 @PathVariable Integer enderecoId,
+                                                 @PathVariable Integer locadorId) {
+        locacaoService.finalizarLocacao(locacaoId, enderecoId, locadorId);
+        return ResponseEntity.ok().build();
+    }
 }
