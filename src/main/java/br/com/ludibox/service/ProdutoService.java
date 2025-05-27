@@ -97,6 +97,20 @@ public class ProdutoService {
             produtoExistente.setImagens(imagensBase64);
         }
 
+        if ((produtoAtualizado.getImagens() != null && !produtoAtualizado.getImagens().isEmpty()) || (imagensBase64 != null && !imagensBase64.isEmpty())) {
+            List<String> imagensAtualizadas = new ArrayList<>();
+
+            if (produtoAtualizado.getImagens() != null) {
+                imagensAtualizadas.addAll(produtoAtualizado.getImagens());
+            }
+
+            if (imagensBase64 != null) {
+                imagensAtualizadas.addAll(imagensBase64);
+            }
+
+            produtoExistente.setImagens(imagensAtualizadas);
+        }
+
         produtoRepository.save(produtoExistente);
     }
 
@@ -197,5 +211,9 @@ public class ProdutoService {
             throw new LudiBoxException("Anúncio não encontrado", "Anúncio com ID " + id + " não encontrado", HttpStatus.NOT_FOUND);
         }
         return produtoOpt.get();
+    }
+
+    public List<Produto> listarPorUsuario(Integer pessoaId) {
+        return produtoRepository.findByAnuncianteId(pessoaId);
     }
 }

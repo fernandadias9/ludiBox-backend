@@ -103,4 +103,10 @@ public class ProdutoController {
     public ProdutoDetalheDto buscarProduto(@PathVariable Integer id) {
         return produtoService.buscar(id);
     }
+
+    @GetMapping("/pessoa/{pessoaId}")
+    public ResponseEntity<List<Produto>> listarPorUsuario(@PathVariable Integer pessoaId) {
+        List<Produto> produtos = produtoService.listarPorUsuario(pessoaId);
+        return ResponseEntity.ok(produtos);
+    }
 }
