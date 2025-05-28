@@ -8,6 +8,9 @@ import br.com.ludibox.model.enums.StatusProduto;
 import br.com.ludibox.service.ProdutoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -100,8 +103,13 @@ public class ProdutoController {
     }
 
     @GetMapping("/listarComFiltro")
-    public ResponseEntity<List<ProdutoListarDto>> listarTodos(@RequestParam(required = false) String nome) {
-        List<ProdutoListarDto> produtos = produtoService.buscarComFiltro(nome);
+    public ResponseEntity<Page<ProdutoListarDto>> listarTodos(
+            @RequestParam(required = false) String nome,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ProdutoListarDto> produtos = produtoService.buscarComFiltro(nome, pageable);
         return ResponseEntity.ok(produtos);
     }
 
