@@ -99,6 +99,12 @@ public class ProdutoController {
         return ResponseEntity.ok(produtos);
     }
 
+    @GetMapping("/listarComFiltro")
+    public ResponseEntity<List<ProdutoListarDto>> listarTodos(@RequestParam(required = false) String nome) {
+        List<ProdutoListarDto> produtos = produtoService.buscarComFiltro(nome);
+        return ResponseEntity.ok(produtos);
+    }
+
     @GetMapping("/buscar/{id}")
     public ProdutoDetalheDto buscarProduto(@PathVariable Integer id) {
         return produtoService.buscar(id);
