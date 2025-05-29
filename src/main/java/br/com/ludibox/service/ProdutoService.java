@@ -9,6 +9,7 @@ import br.com.ludibox.model.entity.Produto;
 import br.com.ludibox.model.enums.EnumPerfil;
 import br.com.ludibox.model.enums.StatusProduto;
 import br.com.ludibox.model.repository.ProdutoRepository;
+import br.com.ludibox.service.IA.ValidadorConteudoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,9 @@ public class ProdutoService {
     @Autowired
     private ImagemService imagemService;
 
+    @Autowired
+    private ValidadorConteudoService validadorConteudoService;
+
     private static final int MAX_IMAGENS = 4;
     private static final long MAX_TAMANHO_IMAGEM = 2 * 1024 * 1024;
 
@@ -57,6 +61,8 @@ public class ProdutoService {
             }
         }
         produto.setImagens(imagensBase64);
+
+        validadorConteudoService.validar(produto);
 
         produtoRepository.save(produto);
     }
@@ -165,7 +171,7 @@ public class ProdutoService {
         List<Produto> produtos = produtoRepository.findAll();
 
         return produtos.stream()
-                .filter(produto -> produto.getStatus() == StatusProduto.ATIVO)
+                .filter(produto -> produto.getStatus() != StatusProduto.ATIVO)
                 .map(produto -> {
             ProdutoListarDto dto = new ProdutoListarDto();
 
