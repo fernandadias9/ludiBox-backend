@@ -12,6 +12,8 @@ import br.com.ludibox.model.repository.ProdutoRepository;
 import br.com.ludibox.service.IA.ValidadorConteudoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -91,7 +93,6 @@ public class ProdutoService {
 
         produtoExistente.setNome(produtoAtualizado.getNome());
         produtoExistente.setDescricao(produtoAtualizado.getDescricao());
-        produtoExistente.setEstoque(produtoAtualizado.getEstoque());
         produtoExistente.setPreco(produtoAtualizado.getPreco());
         produtoExistente.setAltura(produtoAtualizado.getAltura());
         produtoExistente.setLargura(produtoAtualizado.getLargura());
@@ -200,7 +201,6 @@ public class ProdutoService {
         dto.setComprimento(produto.getComprimento());
         dto.setPesoSuportado(produto.getPesoSuportado());
         dto.setDescricao(produto.getDescricao());
-        dto.setEstoque(produto.getEstoque());
         dto.setPreco(produto.getPreco());
         dto.setDatasIndisponiveis(produto.getDatasIndisponiveis());
         dto.setIdAnunciante(produto.getAnunciante().getId());
@@ -221,5 +221,27 @@ public class ProdutoService {
 
     public List<Produto> listarPorUsuario(Integer pessoaId) {
         return produtoRepository.findByAnuncianteId(pessoaId);
+    }
+
+    public Page<ProdutoListarDto> buscarComFiltro(String nome, Pageable pageable) {
+        Page<Produto> produtos;
+
+        if (nome != null && !nome.isBlank()) {
+            produtos = produtoRepository.findByNomeContainingIgnoreCaseAndStatus(nome, StatusProduto.ATIVO, pageable);
+        } else {
+            produtos = produtoRepository.findByStatus(StatusProduto.ATIVO, pageable);
+        }
+
+        return produtos.map(produto -> {
+            ProdutoListarDto dto = new ProdutoListarDto();
+            dto.setId(produto.getId());
+            dto.setNome(produto.getNome());
+            dto.setPreco(produto.getPreco());
+            dto.setIdAnunciante(produto.getAnunciante().getId());
+            dto.setNomeAnunciante(produto.getAnunciante().getNome());
+            dto.setImagemAnunciante(produto.getAnunciante().getImagemUsuarioEmBase64());
+            dto.setImagem(produto.getImagens().isEmpty() ? null : produto.getImagens().get(0));
+            return dto;
+        });
     }
 }

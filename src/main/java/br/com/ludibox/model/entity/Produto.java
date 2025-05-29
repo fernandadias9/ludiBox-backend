@@ -38,10 +38,6 @@ public class Produto {
     private String descricao;
 
     @NotNull
-    @Min(0)
-    private Integer estoque;
-
-    @NotNull
     @Positive
     private Double preco;
 

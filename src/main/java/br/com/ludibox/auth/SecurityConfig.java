@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -49,8 +50,8 @@ public class SecurityConfig {
 				//Hierarquia de permissões e bloqueios
 				auth -> auth
 				//URLs liberadas
-				.requestMatchers("/auth/*", "/public/**", "/produto/listar", "/produto/buscar/*").permitAll()
-
+				.requestMatchers("/auth/*", "/public/**", "/produto/listar", "/produto/listarComFiltro", "/produto/buscar/*", "/api/password/reset").permitAll()
+				.requestMatchers(HttpMethod.GET, "/produto/listarComFiltro").permitAll()
 				//Todas as demais são bloqueadas
 				.anyRequest().authenticated())
 		.httpBasic(Customizer.withDefaults())
