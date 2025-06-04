@@ -50,6 +50,7 @@ public class Pessoa implements UserDetails {
     private String senha;
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 50)
     private EnumStatus situacao;
 
     @Enumerated(EnumType.STRING)

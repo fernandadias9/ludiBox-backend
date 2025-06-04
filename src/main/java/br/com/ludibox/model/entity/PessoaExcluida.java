@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 public class PessoaExcluida {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "usuario_excluido_seq")
-    @SequenceGenerator(name = "usuario_excluido_seq", sequenceName = "usuario_excluido_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pessoa_excluida_seq")
+    @SequenceGenerator(name = "pessoa_excluida_seq", sequenceName = "pessoa_excluida_seq", allocationSize = 1)
     private Integer id;
 
     @Column(nullable = false)

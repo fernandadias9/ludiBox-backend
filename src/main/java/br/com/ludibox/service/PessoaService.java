@@ -5,8 +5,10 @@ import br.com.ludibox.auth.RSAPasswordEncoder;
 import br.com.ludibox.exception.LudiBoxException;
 import br.com.ludibox.model.dto.PerfilDTO;
 import br.com.ludibox.model.entity.Pessoa;
+import br.com.ludibox.model.entity.PessoaExcluida;
 import br.com.ludibox.model.enums.EnumPerfil;
 import br.com.ludibox.model.enums.EnumStatus;
+import br.com.ludibox.model.repository.PessoaExcluidaRepository;
 import br.com.ludibox.model.repository.PessoaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +38,9 @@ public class PessoaService {
 
     @Autowired
     private RSAPasswordEncoder passwordRsa;
+
+    @Autowired
+    private PessoaExcluidaRepository pessoaExcluidaRepository;
 
     public void salvarImagemPessoa(MultipartFile imagem, Integer idPessoa) throws LudiBoxException {
 
@@ -85,18 +91,15 @@ public class PessoaService {
     }
 
     public void verificarPessoaExistente(Pessoa pessoa) throws LudiBoxException {
-        List<Pessoa> pessoas = pessoaRepository.findAll();
+        if (pessoaRepository.findByValorDocumentoAndSituacao(pessoa.getValorDocumento(), EnumStatus.ATIVO).isPresent()) {
+            throw new LudiBoxException("Documento: ", "Documento já cadastrado!", HttpStatus.BAD_REQUEST);
+        }
 
-        for (Pessoa pessoaValidada : pessoas) {
-            if (pessoa.getValorDocumento().equals(pessoaValidada.getValorDocumento())) {
-                throw new LudiBoxException("Documento: ", "Documento já cadastrado!", HttpStatus.BAD_REQUEST);
-            }else if (pessoa.getEmail().equals(pessoaValidada.getEmail())) {
-                throw new LudiBoxException("Email: ", "Email já cadastrado!", HttpStatus.BAD_REQUEST);
-            } else if (pessoa.getTelefone().equals(pessoaValidada.getTelefone())) {
-                throw new LudiBoxException("Telefone: ", "Telefone já cadastrado!", HttpStatus.BAD_REQUEST);
-            }
+        if (pessoaRepository.findByEmailAndSituacao(pessoa.getEmail(), EnumStatus.ATIVO).isPresent()) {
+            throw new LudiBoxException("Email: ", "Email já cadastrado!", HttpStatus.BAD_REQUEST);
         }
     }
+
 
     public Pessoa cadastrarAdm(Pessoa pessoa) throws LudiBoxException{
         Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
@@ -157,18 +160,44 @@ public class PessoaService {
         }
     }
 
-    public void desativarPessoa(int id) throws LudiBoxException{
+    public void excluirPessoa(int id) throws LudiBoxException {
         Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
-        Pessoa pessoa = pessoaRepository.findById(id).orElseThrow(() -> new LudiBoxException("ID: ", "Pessoa não encontrada!", HttpStatus.BAD_REQUEST));
 
-        if (pessoaAutenticada.getId() != pessoa.getId()) {
-            throw new LudiBoxException("Erro: ", "Usuários só podem alterar seus próprios dados!", HttpStatus.UNAUTHORIZED);
+        Pessoa pessoa = pessoaRepository.findById(id)
+                .orElseThrow(() -> new LudiBoxException(
+                        "Pessoa não encontrada",
+                        "Não foi possível encontrar uma pessoa com o ID: " + id,
+                        HttpStatus.BAD_REQUEST
+                ));
+
+        if (!pessoaAutenticada.getId().equals(pessoa.getId())) {
+            throw new LudiBoxException(
+                    "Acesso negado",
+                    "Usuários só podem excluir seus próprios dados.",
+                    HttpStatus.UNAUTHORIZED
+            );
         }
 
-        Pessoa pessoaDesativada = pessoaRepository.findById(pessoa.getId()).get();
-        pessoaDesativada.setSituacao(EnumStatus.INATIVO);
-        pessoaRepository.save(pessoaDesativada);
+        if (pessoa.getSituacao() == EnumStatus.EXCLUIDO) {
+            throw new LudiBoxException(
+                    "Operação inválida",
+                    "Essa pessoa já está excluída.",
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+
+        // ⚠️ Registro para compliance (LGPD)
+        PessoaExcluida pessoaExcluida = new PessoaExcluida();
+        pessoaExcluida.setCpfOuCnpj(pessoa.getValorDocumento());
+        pessoaExcluida.setEmail(pessoa.getEmail());
+        pessoaExcluida.setDataExclusao(LocalDateTime.now());
+
+        pessoaExcluidaRepository.save(pessoaExcluida);
+
+        pessoa.setSituacao(EnumStatus.EXCLUIDO);
+        pessoaRepository.save(pessoa);
     }
+
 
     public void reativarPessoa(int id) throws LudiBoxException{
         Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
@@ -199,9 +228,6 @@ public class PessoaService {
 
     public PerfilDTO buscarPerfilPorId(int id){
         Pessoa pessoa = pessoaRepository.findById(id).orElseThrow(() -> new LudiBoxException("ID: ", "Usuário não encontrado!", HttpStatus.BAD_REQUEST));
-
-
-
         PerfilDTO perfil = new PerfilDTO();
         perfil.setNome(pessoa.getNome());
         perfil.setId(pessoa.getId());
