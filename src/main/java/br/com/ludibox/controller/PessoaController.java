@@ -27,11 +27,12 @@ public class PessoaController {
     @Autowired
     private AuthenticationService authService;
 
+    @PatchMapping("/upload/{idPessoa}")
+    public ResponseEntity<String> uploadPessoa(
+            @RequestParam("imagem") MultipartFile imagem,
+            @PathVariable Integer idPessoa) throws LudiBoxException, IOException {
 
-    @PostMapping("/{idPessoa}/upload")
-    public void UploadPessoa(@RequestParam("imagem") MultipartFile imagem, @PathVariable Integer idPessoa)
-            throws LudiBoxException, IOException {
-        if(imagem == null) {
+        if (imagem == null || imagem.isEmpty()) {
             throw new LudiBoxException("Erro: ", "Arquivo inválido", HttpStatus.BAD_REQUEST);
         }
 
@@ -39,10 +40,10 @@ public class PessoaController {
         if (pessoaAutenticada == null) {
             throw new LudiBoxException("Não autorizado: ", "Usuário sem permissão de acesso", HttpStatus.UNAUTHORIZED);
         }
-
         pessoaService.salvarImagemPessoa(imagem, idPessoa);
-
+        return ResponseEntity.ok("Imagem atualizada com sucesso");
     }
+
 
     @PostMapping("/cadastrar_adm")
     public ResponseEntity<Pessoa> cadastrarAdm(@RequestBody Pessoa pessoa) throws LudiBoxException{

@@ -36,10 +36,6 @@ public class PessoaService {
     @Autowired
     private RSAPasswordEncoder passwordRsa;
 
-
-
-
-
     public void salvarImagemPessoa(MultipartFile imagem, Integer idPessoa) throws LudiBoxException {
 
         Pessoa pessoaComImagem = pessoaRepository.

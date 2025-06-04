@@ -59,7 +59,9 @@ public class Pessoa implements UserDetails {
     @Enumerated(EnumType.STRING)
     private EnumDocumento tipoDocumento;
 
-    @Column(columnDefinition = "TEXT")
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    @Column(length = 10485760)
     private String imagemUsuarioEmBase64;
 
     @NotBlank(message = "Documento é obrigatório")
