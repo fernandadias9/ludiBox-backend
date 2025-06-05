@@ -1,5 +1,6 @@
 package br.com.ludibox.controller;
 
+import br.com.ludibox.model.dto.LocacaoDto;
 import br.com.ludibox.model.entity.Locacao;
 import br.com.ludibox.model.entity.Pessoa;
 import br.com.ludibox.model.entity.ProdutoLocacao;
@@ -10,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/locacao")
@@ -90,5 +93,17 @@ public class LocacaoController {
                                                  @PathVariable Integer locadorId) {
         locacaoService.finalizarLocacao(locacaoId, enderecoId, locadorId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/recebidas/{usuarioId}")
+    public ResponseEntity<List<ProdutoLocacao>> listarLocacoesRecebidas(@PathVariable Integer usuarioId) {
+        List<ProdutoLocacao> locacoes = locacaoService.obterLocacoesRecebidas(usuarioId);
+        return ResponseEntity.ok(locacoes);
+    }
+
+    @GetMapping("/efetuadas/{usuarioId}")
+    public ResponseEntity<List<Locacao>> listarLocacoesEfetuadas(@PathVariable Integer usuarioId) {
+        List<Locacao> locacoes = locacaoService.obterLocacoesEfetuadas(usuarioId);
+        return ResponseEntity.ok(locacoes);
     }
 }

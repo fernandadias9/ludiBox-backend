@@ -1,5 +1,6 @@
 package br.com.ludibox.service;
 
+import br.com.ludibox.model.dto.LocacaoDto;
 import br.com.ludibox.model.entity.*;
 import br.com.ludibox.model.enums.StatusLocacao;
 import br.com.ludibox.model.repository.*;
@@ -263,5 +264,14 @@ public class LocacaoService {
         locacao.setDataHoraPagamento(LocalDateTime.now());
 
         locacaoRepository.save(locacao);
+    }
+
+    public List<ProdutoLocacao> obterLocacoesRecebidas(Integer usuarioId) {
+        List<ProdutoLocacao> locacoes = produtoLocacaoRepository.findLocacoesRecebidas(usuarioId);
+        return locacoes;
+    }
+
+    public List<Locacao> obterLocacoesEfetuadas(Integer usuarioId) {
+        return locacaoRepository.findLocacoesEfetuadas(usuarioId);
     }
 }
