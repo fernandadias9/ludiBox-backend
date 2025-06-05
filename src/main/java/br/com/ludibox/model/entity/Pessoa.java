@@ -99,13 +99,14 @@ public class Pessoa implements UserDetails {
         return this.senha;
     }
 
-
     @Override
     public String getUsername() {
         return this.email;
     }
 
-
-
+    @Override
+    public boolean isEnabled() {
+        return EnumStatus.ATIVO.equals(this.situacao);
+    }
 
 }

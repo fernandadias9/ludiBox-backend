@@ -85,7 +85,6 @@ public class ProdutoService {
 
         produtoExistente.setNome(produtoAtualizado.getNome());
         produtoExistente.setDescricao(produtoAtualizado.getDescricao());
-        produtoExistente.setEstoque(produtoAtualizado.getEstoque());
         produtoExistente.setPreco(produtoAtualizado.getPreco());
         produtoExistente.setAltura(produtoAtualizado.getAltura());
         produtoExistente.setLargura(produtoAtualizado.getLargura());
@@ -161,7 +160,7 @@ public class ProdutoService {
     }
 
     public List<ProdutoListarDto> buscarTodos() {
-        List<Produto> produtos = produtoRepository.findAll();
+        List<Produto> produtos = produtoRepository.buscarProdutosComAnuncianteAtivo();
 
         return produtos.stream()
                 .filter(produto -> produto.getStatus() == StatusProduto.ATIVO)
@@ -194,7 +193,6 @@ public class ProdutoService {
         dto.setComprimento(produto.getComprimento());
         dto.setPesoSuportado(produto.getPesoSuportado());
         dto.setDescricao(produto.getDescricao());
-        dto.setEstoque(produto.getEstoque());
         dto.setPreco(produto.getPreco());
         dto.setDatasIndisponiveis(produto.getDatasIndisponiveis());
         dto.setIdAnunciante(produto.getAnunciante().getId());

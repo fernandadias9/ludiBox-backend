@@ -5,10 +5,8 @@ import br.com.ludibox.auth.RSAPasswordEncoder;
 import br.com.ludibox.exception.LudiBoxException;
 import br.com.ludibox.model.dto.PerfilDTO;
 import br.com.ludibox.model.entity.Pessoa;
-import br.com.ludibox.model.entity.PessoaExcluida;
 import br.com.ludibox.model.enums.EnumPerfil;
 import br.com.ludibox.model.enums.EnumStatus;
-import br.com.ludibox.model.repository.PessoaExcluidaRepository;
 import br.com.ludibox.model.repository.PessoaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -38,9 +36,6 @@ public class PessoaService {
 
     @Autowired
     private RSAPasswordEncoder passwordRsa;
-
-    @Autowired
-    private PessoaExcluidaRepository pessoaExcluidaRepository;
 
     public void salvarImagemPessoa(MultipartFile imagem, Integer idPessoa) throws LudiBoxException {
 
@@ -185,15 +180,6 @@ public class PessoaService {
                     HttpStatus.BAD_REQUEST
             );
         }
-
-        // ⚠️ Registro para compliance (LGPD)
-        PessoaExcluida pessoaExcluida = new PessoaExcluida();
-        pessoaExcluida.setCpfOuCnpj(pessoa.getValorDocumento());
-        pessoaExcluida.setEmail(pessoa.getEmail());
-        pessoaExcluida.setDataExclusao(LocalDateTime.now());
-
-        pessoaExcluidaRepository.save(pessoaExcluida);
-
         pessoa.setSituacao(EnumStatus.EXCLUIDO);
         pessoaRepository.save(pessoa);
     }

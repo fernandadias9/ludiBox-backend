@@ -71,7 +71,7 @@ public class PessoaController {
     }
 
 
-    @PutMapping("/desativar/{id}")
+    @PutMapping("/excluir/{id}")
     public void desativarPessoa(@PathVariable int id) throws LudiBoxException {
         pessoaService.excluirPessoa(id);
     }
