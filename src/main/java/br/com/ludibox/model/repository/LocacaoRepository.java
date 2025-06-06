@@ -8,10 +8,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface LocacaoRepository extends JpaRepository<Locacao, Integer>, JpaSpecificationExecutor<Locacao> {
     @Query("SELECT l FROM Locacao l WHERE l.locador.id = :usuarioId AND l.status = 'PENDENTE'")
     Optional<Locacao> findByUsuarioIdAndStatusPendente(@Param("usuarioId") Integer usuarioId);
+
+    @Query("SELECT l FROM Locacao l WHERE l.locador.id = :usuarioId AND l.status='PAGO'")
+    List<Locacao> findLocacoesEfetuadas(@Param("usuarioId") Integer usuarioId);
 }
