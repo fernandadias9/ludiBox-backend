@@ -16,7 +16,6 @@ public class ProdutoDetalheDto {
     private int comprimento;
     private int pesoSuportado;
     private String descricao;
-    private int estoque;
     private Double preco;
     private List<LocalDate> datasIndisponiveis;
     private Integer idAnunciante;

@@ -67,7 +67,4 @@ public class JwtService {
 				JwtEncoderParameters.from(claims)).getTokenValue();
 
 	}
-
-	
-
 }
