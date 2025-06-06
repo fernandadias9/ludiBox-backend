@@ -168,7 +168,7 @@ public class ProdutoService {
     }
 
     public List<ProdutoListarDto> buscarTodos() {
-        List<Produto> produtos = produtoRepository.buscarProdutosComAnuncianteAtivo();
+        List<Produto> produtos = produtoRepository.findByAnuncianteSituacaoTrue();
 
         return produtos.stream()
                 .filter(produto -> produto.getStatus() != StatusProduto.ATIVO)
@@ -227,9 +227,9 @@ public class ProdutoService {
         Page<Produto> produtos;
 
         if (nome != null && !nome.isBlank()) {
-            produtos = produtoRepository.findByNomeContainingIgnoreCaseAndStatus(nome, StatusProduto.ATIVO, pageable);
+            produtos = produtoRepository.findByNomeContainingIgnoreCaseAndStatusAndAnuncianteAtivo(nome, StatusProduto.ATIVO, pageable);
         } else {
-            produtos = produtoRepository.findByStatus(StatusProduto.ATIVO, pageable);
+            produtos = produtoRepository.findByStatusAndAnuncianteAtivo(StatusProduto.ATIVO, pageable);
         }
 
         return produtos.map(produto -> {

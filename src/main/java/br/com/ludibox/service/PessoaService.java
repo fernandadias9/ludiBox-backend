@@ -86,11 +86,11 @@ public class PessoaService {
     }
 
     public void verificarPessoaExistente(Pessoa pessoa) throws LudiBoxException {
-        if (pessoaRepository.findByValorDocumentoAndSituacao(pessoa.getValorDocumento(), EnumStatus.ATIVO).isPresent()) {
+        if (pessoaRepository.findByValorDocumentoAndSituacao(pessoa.getValorDocumento(), true).isPresent()) {
             throw new LudiBoxException("Documento: ", "Documento já cadastrado!", HttpStatus.BAD_REQUEST);
         }
 
-        if (pessoaRepository.findByEmailAndSituacao(pessoa.getEmail(), EnumStatus.ATIVO).isPresent()) {
+        if (pessoaRepository.findByEmailAndSituacao(pessoa.getEmail(), true).isPresent()) {
             throw new LudiBoxException("Email: ", "Email já cadastrado!", HttpStatus.BAD_REQUEST);
         }
     }
@@ -147,7 +147,7 @@ public class PessoaService {
         if(!pessoaVerificada.getValorDocumento().equals(pessoa.getValorDocumento())) {
             throw new LudiBoxException("Documento: ", "O documento não pode ser alterado!", HttpStatus.BAD_REQUEST);
         }
-        if(!pessoa.getSituacao().equals(EnumStatus.ATIVO)){
+        if(!pessoa.isEnabled()){
             throw new LudiBoxException("Situação: ", "A situação não pode ser alterada!", HttpStatus.BAD_REQUEST);
         }
         if (!pessoa.getPerfil().equals(EnumPerfil.USUARIO)){
@@ -173,14 +173,14 @@ public class PessoaService {
             );
         }
 
-        if (pessoa.getSituacao() == EnumStatus.EXCLUIDO) {
+        if (!pessoa.isEnabled()) {
             throw new LudiBoxException(
                     "Operação inválida",
                     "Essa pessoa já está excluída.",
                     HttpStatus.BAD_REQUEST
             );
         }
-        pessoa.setSituacao(EnumStatus.EXCLUIDO);
+        pessoa.setSituacao(false);
         pessoaRepository.save(pessoa);
     }
 
@@ -190,7 +190,7 @@ public class PessoaService {
         Pessoa pessoa = pessoaRepository.findById(id).orElseThrow(() -> new LudiBoxException("ID: ", "Pessoa não encontrada!", HttpStatus.BAD_REQUEST));
 
         Pessoa pessoaAtivada = pessoaRepository.findById(pessoa.getId()).get();
-        pessoaAtivada.setSituacao(EnumStatus.ATIVO);
+        pessoaAtivada.setSituacao(true);
         pessoaRepository.save(pessoaAtivada);
     }
 
@@ -204,7 +204,7 @@ public class PessoaService {
         }
 
         Pessoa pessoaBloqueada = pessoaRepository.findById(pessoa.getId()).get();
-        pessoaBloqueada.setSituacao(EnumStatus.BLOQUEADO);
+        pessoaBloqueada.setSituacao(false);
         pessoaRepository.save(pessoaBloqueada);
     }
 

@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jdk.jfr.BooleanFlag;
 import lombok.Data;
 import lombok.NonNull;
 import org.aspectj.lang.annotation.Before;
@@ -49,9 +50,8 @@ public class Pessoa implements UserDetails {
     @Size(min = 5, max = 500)
     private String senha;
 
-    @Enumerated(EnumType.STRING)
-    @Column(length = 50)
-    private EnumStatus situacao;
+    @BooleanFlag
+    private boolean situacao;
 
     @Enumerated(EnumType.STRING)
     private EnumPerfil perfil;
@@ -79,9 +79,7 @@ public class Pessoa implements UserDetails {
         if (perfil == null) {
             perfil = EnumPerfil.USUARIO;
         }
-        if (situacao == null) {
-            situacao = EnumStatus.ATIVO;
-        }
+        situacao = true;
     }
 
     @Override
@@ -106,7 +104,8 @@ public class Pessoa implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return EnumStatus.ATIVO.equals(this.situacao);
+        return Boolean.TRUE.equals(this.situacao);
     }
+
 
 }

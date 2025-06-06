@@ -13,6 +13,6 @@ public interface PessoaRepository extends
         JpaRepository<Pessoa, Integer>, JpaSpecificationExecutor<Pessoa>{
 
     Optional<Pessoa> findByEmail(String email);
-    Optional<Pessoa> findByValorDocumentoAndSituacao(String valorDocumento, EnumStatus situacao);
-    Optional<Pessoa> findByEmailAndSituacao(String email, EnumStatus situacao);
+    Optional<Pessoa> findByValorDocumentoAndSituacao(String valorDocumento, boolean situacao);
+    Optional<Pessoa> findByEmailAndSituacao(String email, boolean situacao);
 }
