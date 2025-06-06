@@ -1,6 +1,7 @@
 package br.com.ludibox.model.entity;
 
 import br.com.ludibox.model.enums.StatusLocacao;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -20,7 +21,7 @@ public class Locacao {
     private LocalDateTime dataHoraEfetuada;
 
     @OneToMany(mappedBy = "locacao", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @JsonIgnoreProperties("locacao")
     private List<ProdutoLocacao> produtos = new ArrayList<>();
 
     @PositiveOrZero

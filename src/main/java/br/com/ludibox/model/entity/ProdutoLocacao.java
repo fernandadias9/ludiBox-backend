@@ -24,7 +24,6 @@ public class ProdutoLocacao {
     @NotNull
     @ManyToOne
     @JoinColumn(name = "locacao_id")
-    @JsonBackReference
     private Locacao locacao;
 
     @NotNull
