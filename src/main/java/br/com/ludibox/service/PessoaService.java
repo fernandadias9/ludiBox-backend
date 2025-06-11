@@ -228,17 +228,15 @@ public class PessoaService {
         return perfil;
     }
 
-//    @Transactional
-//    public void anonimizarDadosPessoa(Long pessoaId) {
-//        pessoaRepository.findById(pessoaId).ifPresent(pessoa -> {
-//            pessoa.setEmail("anonimizado_" + pessoa.getId() + "@ludibox.com");
-//            pessoa.setCpfCnpj(null); // ou colocar um marcador tipo "REMOVIDO"
-//            pessoa.setNome("Usuário Anônimo");
-//            // qualquer outro dado pessoal
-//
-//            pessoaRepository.save(pessoa);
-//        });
-//    }
+    @Transactional
+    public void anonimizarDadosPessoa(Integer pessoaId) {
+        pessoaRepository.findById(pessoaId).ifPresent(pessoa -> {
+            pessoa.setEmail("anonimizado_" + pessoa.getId() + "@ludibox.com");
+            pessoa.setValorDocumento("00000000000");
+
+            pessoaRepository.save(pessoa);
+        });
+    }
 
 
 }
