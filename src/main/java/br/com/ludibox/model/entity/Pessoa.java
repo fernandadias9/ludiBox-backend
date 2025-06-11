@@ -22,6 +22,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,12 +75,19 @@ public class Pessoa implements UserDetails {
     @OneToMany(mappedBy = "pessoa")
     private List<Endereco> enderecos;
 
+    @Column(name = "dataDesativacao")
+    private LocalDateTime dataDesativacao;
+
+    @Column(name = "dataCriacao")
+    private LocalDateTime dataCriacao;
+
     @PrePersist
     protected void onCreate() {
         if (perfil == null) {
             perfil = EnumPerfil.USUARIO;
         }
         situacao = true;
+        dataCriacao = LocalDateTime.now();
     }
 
     @Override

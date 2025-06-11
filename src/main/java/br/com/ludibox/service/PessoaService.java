@@ -8,6 +8,7 @@ import br.com.ludibox.model.entity.Pessoa;
 import br.com.ludibox.model.enums.EnumPerfil;
 import br.com.ludibox.model.enums.EnumStatus;
 import br.com.ludibox.model.repository.PessoaRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -181,6 +182,7 @@ public class PessoaService {
             );
         }
         pessoa.setSituacao(false);
+        pessoa.setDataDesativacao(LocalDateTime.now());
         pessoaRepository.save(pessoa);
     }
 
@@ -225,5 +227,18 @@ public class PessoaService {
 
         return perfil;
     }
+
+//    @Transactional
+//    public void anonimizarDadosPessoa(Long pessoaId) {
+//        pessoaRepository.findById(pessoaId).ifPresent(pessoa -> {
+//            pessoa.setEmail("anonimizado_" + pessoa.getId() + "@ludibox.com");
+//            pessoa.setCpfCnpj(null); // ou colocar um marcador tipo "REMOVIDO"
+//            pessoa.setNome("Usuário Anônimo");
+//            // qualquer outro dado pessoal
+//
+//            pessoaRepository.save(pessoa);
+//        });
+//    }
+
 
 }

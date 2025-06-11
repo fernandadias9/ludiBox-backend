@@ -188,7 +188,7 @@ public class ProdutoService {
     }
 
     public ProdutoDetalheDto buscar(Integer id) {
-        Produto produto = produtoRepository.findById(id)
+        Produto produto = produtoRepository.findByIdAndAnuncianteAtivo(id)
                 .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
 
         ProdutoDetalheDto dto = new ProdutoDetalheDto();
