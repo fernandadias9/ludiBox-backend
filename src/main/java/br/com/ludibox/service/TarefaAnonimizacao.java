@@ -18,10 +18,10 @@ public class TarefaAnonimizacao {
     @Autowired
     private PessoaService pessoaService;
 
-    // Roda todo dia às 3h da manhã
-    @Scheduled(cron = "0 0 3 * * *")
+
+    @Scheduled(cron = "0 0 3 1 * *")
     public void anonimizarUsuariosInativos() {
-        LocalDateTime dataLimite = LocalDateTime.now().minusYears(2);
+        LocalDateTime dataLimite = LocalDateTime.now().minusYears(1);
         List<Pessoa> pessoasParaAnonimizar = pessoaRepository
                 .findAllByDataDesativacaoBeforeAndEmailNotLike(dataLimite, "anonimizado_%");
 

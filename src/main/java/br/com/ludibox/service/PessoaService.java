@@ -231,10 +231,10 @@ public class PessoaService {
     @Transactional
     public void anonimizarDadosPessoa(Integer pessoaId) {
         pessoaRepository.findById(pessoaId).ifPresent(pessoa -> {
-            pessoa.setEmail("anonimizado_" + pessoa.getId() + "@ludibox.com");
-            pessoa.setValorDocumento("00000000000");
+            String novoEmail = "anonimizado_" + pessoa.getId() + "@ludibox.com";
+            String cnpjFicticio = "00000000000";
 
-            pessoaRepository.save(pessoa);
+            pessoaRepository.anonimizarDados(pessoaId, novoEmail, cnpjFicticio);
         });
     }
 

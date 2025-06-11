@@ -2,8 +2,12 @@ package br.com.ludibox.model.repository;
 
 import br.com.ludibox.model.entity.Pessoa;
 import br.com.ludibox.model.enums.EnumStatus;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -19,5 +23,13 @@ public interface PessoaRepository extends
     Optional<Pessoa> findByEmailAndSituacao(String email, boolean situacao);
 
     List<Pessoa> findAllByDataDesativacaoBeforeAndEmailNotLike(LocalDateTime data, String pattern);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Pessoa p SET p.email = :email, p.valorDocumento = :documento WHERE p.id = :id")
+    void anonimizarDados(@Param("id") Integer id,
+                         @Param("email") String email,
+                         @Param("documento") String documento);
+
 
 }
