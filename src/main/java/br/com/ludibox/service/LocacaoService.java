@@ -205,6 +205,7 @@ public class LocacaoService {
         cancelamento.setMotivo(motivoCancelamento);
         cancelamento.setMulta(multaValor);
         cancelamento.setLocacao(locacao);
+        cancelamentoRepository.save(cancelamento);
 
         locacaoRepository.save(locacao);
     }

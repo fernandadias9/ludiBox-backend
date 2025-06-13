@@ -16,6 +16,6 @@ public interface LocacaoRepository extends JpaRepository<Locacao, Integer>, JpaS
     @Query("SELECT l FROM Locacao l WHERE l.locador.id = :usuarioId AND l.status = 'PENDENTE'")
     Optional<Locacao> findByUsuarioIdAndStatusPendente(@Param("usuarioId") Integer usuarioId);
 
-    @Query("SELECT l FROM Locacao l WHERE l.locador.id = :usuarioId AND l.status='PAGO'")
+    @Query("SELECT l FROM Locacao l WHERE l.locador.id = :usuarioId")
     List<Locacao> findLocacoesEfetuadas(@Param("usuarioId") Integer usuarioId);
 }
