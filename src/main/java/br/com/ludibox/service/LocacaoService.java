@@ -1,6 +1,5 @@
 package br.com.ludibox.service;
 
-import br.com.ludibox.model.dto.LocacaoDto;
 import br.com.ludibox.model.entity.*;
 import br.com.ludibox.model.enums.StatusLocacao;
 import br.com.ludibox.model.repository.*;
@@ -206,6 +205,7 @@ public class LocacaoService {
         cancelamento.setMotivo(motivoCancelamento);
         cancelamento.setMulta(multaValor);
         cancelamento.setLocacao(locacao);
+        cancelamentoRepository.save(cancelamento);
 
         locacaoRepository.save(locacao);
     }
@@ -273,5 +273,16 @@ public class LocacaoService {
 
     public List<Locacao> obterLocacoesEfetuadas(Integer usuarioId) {
         return locacaoRepository.findLocacoesEfetuadas(usuarioId);
+    }
+
+    public Locacao atualizarStatus(Integer idLocacao, String statusRecebido) {
+        Locacao locacao = locacaoRepository.findById(idLocacao)
+                .orElseThrow(() -> new RuntimeException("Locação não encontrada"));
+
+        StatusLocacao statusLocacao = StatusLocacao.valueOf(statusRecebido);
+
+        locacao.setStatus(statusLocacao);
+
+        return locacaoRepository.save(locacao);
     }
 }
