@@ -71,6 +71,10 @@ public class Pessoa implements UserDetails {
     @CNPJ(groups = CnpjGroup.class)
     private String valorDocumento;
 
+    @Column(name = "secret_totp", length = 100)
+    private String secretTotp;
+
+
     @JsonBackReference
     @OneToMany(mappedBy = "pessoa")
     private List<Endereco> enderecos;

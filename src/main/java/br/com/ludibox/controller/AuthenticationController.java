@@ -18,7 +18,6 @@ import jakarta.validation.Valid;
 
 import java.util.Date;
 
-
 @RestController
 @RequestMapping(path = "/auth")
 public class AuthenticationController {
@@ -28,6 +27,7 @@ public class AuthenticationController {
 
 	@Autowired
 	private PessoaService pessoaService;
+
 	@Autowired
 	private GoogleAuthenticatorService googleAuthenticatorService;
 
@@ -38,16 +38,18 @@ public class AuthenticationController {
 			@RequestParam("code") String codeFromUser
 	) throws LudiBoxException {
 
-		Date timestamp = new Date(System.currentTimeMillis());
-		String generatedCode = googleAuthenticatorService.getCode(timestamp);
+		Pessoa pessoa = pessoaService.buscarPorEmail(authentication.getName());
 
-		if (!generatedCode.equals(codeFromUser)) {
+		String secret = pessoa.getSecretTotp();
+
+		boolean isValid = googleAuthenticatorService.isCodeValid(secret, codeFromUser);
+
+		if (!isValid) {
 			throw new LudiBoxException("Erro", "Código TOTP inválido.", HttpStatus.UNAUTHORIZED);
 		}
 
 		return authenticationService.authenticatePessoa(authentication);
 	}
-
 
 
 	@PostMapping("/cadastrar_adm")

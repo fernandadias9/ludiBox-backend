@@ -17,10 +17,4 @@ public class GenerateSecretScheduler {
         this.googleAuthenticatorService = googleAuthenticatorService;
     }
 
-    @Scheduled(fixedRate = 1000L)
-    public void getCode() {
-        Date timestamp = new Date(System.currentTimeMillis());
-        String code = googleAuthenticatorService.getCode(timestamp);
-        System.out.println("Código TOTP gerado: " + code);
-    }
 }
