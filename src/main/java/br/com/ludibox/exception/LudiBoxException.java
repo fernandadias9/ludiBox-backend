@@ -20,6 +20,4 @@ public class LudiBoxException extends RuntimeException {
 		this.mensagem = mensagem;
 		this.httpStatus = httpStatus;
 	}
-
-
 }
