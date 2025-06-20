@@ -19,4 +19,11 @@ public class EmailService {
                 "\n\nRecomendamos que você altere essa senha após fazer login no sistema.\n\nEquipe Ludibox");
         envioEmail.send(mensagem);
     }
+    public void enviarAnuncioBloqueado(String destino, String nomeProduto) {
+        SimpleMailMessage mensagem = new SimpleMailMessage();
+        mensagem.setTo(destino);
+        mensagem.setSubject("Seu anúncio foi bloqueado - Ludibox");
+        mensagem.setText("Olá,\n\nO seu anúncio \"" + nomeProduto + "\" foi bloqueado por violar as políticas da Ludibox.\n\nSe quiser mais informações, entre em contato com o suporte.\n\nAtenciosamente,\n\nEquipe Ludibox");
+        envioEmail.send(mensagem);
+    }
 }
