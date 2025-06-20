@@ -62,7 +62,7 @@ public class PessoaService {
         String secret = googleAuthenticatorService.generateSecretBase32();
         pessoa.setSecretTotp(secret);
 
-        pessoa.setSituacao(false);
+//        pessoa.setSituacao(false);
 
         return pessoaRepository.save(pessoa);
     }

@@ -32,24 +32,29 @@ public class AuthenticationController {
 	private GoogleAuthenticatorService googleAuthenticatorService;
 
 
-	@PostMapping("authenticatePessoa")
+	@PostMapping("/authenticatePessoa")
 	public String authenticatePessoa(
 			Authentication authentication,
-			@RequestParam("code") String codeFromUser
+			@RequestParam(value = "code", required = false) String codeFromUser
 	) throws LudiBoxException {
 
 		Pessoa pessoa = pessoaService.buscarPorEmail(authentication.getName());
 
-		String secret = pessoa.getSecretTotp();
+		if (pessoa.isTwoFactorEnabled() && pessoa.isTwoFactorConfirmed()) {
+			if (codeFromUser == null || codeFromUser.isEmpty()) {
+				throw new LudiBoxException("Erro", "Código TOTP é obrigatório.", HttpStatus.UNAUTHORIZED);
+			}
 
-		boolean isValid = googleAuthenticatorService.isCodeValid(secret, codeFromUser);
+			boolean isValid = googleAuthenticatorService.isCodeValid(pessoa.getSecretTotp(), codeFromUser);
 
-		if (!isValid) {
-			throw new LudiBoxException("Erro", "Código TOTP inválido.", HttpStatus.UNAUTHORIZED);
+			if (!isValid) {
+				throw new LudiBoxException("Erro", "Código TOTP inválido.", HttpStatus.UNAUTHORIZED);
+			}
 		}
 
 		return authenticationService.authenticatePessoa(authentication);
 	}
+
 
 
 	@PostMapping("/cadastrar_adm")

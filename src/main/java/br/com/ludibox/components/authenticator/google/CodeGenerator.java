@@ -40,4 +40,5 @@ public class CodeGenerator {
         return MatrixToImageWriter.toBufferedImage(matrix);
     }
 
+
 }

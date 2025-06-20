@@ -42,18 +42,12 @@ public class AuthenticationService {
 
 		if (principal instanceof Jwt) {
 			Jwt jwt = (Jwt) principal;
-			String login = jwt.getClaim("sub");
+			Integer id = Integer.valueOf(jwt.getSubject());
 
-			return pessoaRepository.findByEmail(login)
-					.orElseThrow(() -> new LudiBoxException("Not found: ", "Usuário não encontrado: " + login, HttpStatus.BAD_REQUEST));
-		} else if (principal instanceof UserDetails) {
-			String username = ((UserDetails) principal).getUsername();
-
-			return pessoaRepository.findByEmail(username)
-					.orElseThrow(() -> new LudiBoxException("Not found: ", "Usuário não encontrado: " + username, HttpStatus.BAD_REQUEST));
-		} else if (principal instanceof Pessoa) {
-			return (Pessoa) principal;
+			return pessoaRepository.findById(id)
+					.orElseThrow(() -> new LudiBoxException("Not found: ", "Usuário não encontrado com ID: " + id, HttpStatus.BAD_REQUEST));
 		}
+
 
 		throw new LudiBoxException("Erro: ", "Tipo inesperado de principal: " + principal.getClass(), HttpStatus.INTERNAL_SERVER_ERROR);
 

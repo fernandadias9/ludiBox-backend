@@ -74,6 +74,11 @@ public class Pessoa implements UserDetails {
     @Column(name = "secret_totp", length = 100)
     private String secretTotp;
 
+    @Column(name = "two_factor_enabled", nullable = false)
+    private boolean twoFactorEnabled = false;
+
+    @Column(name = "two_factor_confirmed", nullable = false)
+    private boolean twoFactorConfirmed = false;
 
     @JsonBackReference
     @OneToMany(mappedBy = "pessoa")
@@ -91,6 +96,8 @@ public class Pessoa implements UserDetails {
             perfil = EnumPerfil.USUARIO;
         }
         situacao = true;
+        twoFactorEnabled = false;
+        twoFactorConfirmed = false;
         dataCriacao = LocalDateTime.now();
     }
 

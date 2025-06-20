@@ -58,10 +58,11 @@ public class JwtService {
 				.issuer("ludibox")
 				.issuedAt(now)
 				.expiresAt(now.plusSeconds(dezHorasEmSegundo))
-				.subject(authentication.getName())
+				.subject(String.valueOf(pessoaAutenticada.getId()))
 				.claim("roles", rles)
 				.claim("id", pessoaAutenticada.getId())
 				.build();
+
 
 		return jwtEncoder.encode(
 				JwtEncoderParameters.from(claims)).getTokenValue();
