@@ -3,11 +3,14 @@ package br.com.ludibox.auth;
 import br.com.ludibox.model.entity.Pessoa;
 import br.com.ludibox.model.enums.EnumPerfil;
 import br.com.ludibox.model.repository.PessoaRepository;
+import br.com.ludibox.service.PessoaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +23,26 @@ public class AuthenticationService {
 
 	@Autowired
 	private PessoaRepository pessoaRepository;
-	
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+
+
+
+
+	public String gerarTokenTemporario(String email) {
+		return jwtService.gerarTokenTemporario(email);
+	}
+
+	public String validarTokenTemporario(String token) throws LudiBoxException {
+		return jwtService.validarTokenTemporario(token);
+	}
+
+	public Authentication autenticarComEmail(String email) {
+		Pessoa pessoa = pessoaRepository.findByEmail(email).get();
+		return new UsernamePasswordAuthenticationToken(pessoa, null, pessoa.getAuthorities());
+	}
+
 	public AuthenticationService(JwtService jwtService) {
 		this.jwtService = jwtService;
 	}

@@ -234,6 +234,10 @@ public class PessoaService {
         perfil.setSenha(passwordRsa.decode(pessoa.getPassword()));
         perfil.setTelefone(pessoa.getTelefone());
         perfil.setValorDocumento(pessoa.getValorDocumento());
+        perfil.setTwoFactorEnabled(pessoa.isTwoFactorEnabled());
+        perfil.setTwoFactorConfirmed(pessoa.isTwoFactorConfirmed());
+
+
 
         return perfil;
     }
@@ -253,6 +257,11 @@ public class PessoaService {
         return pessoaRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Pessoa não encontrada com email: " + email));
     }
+
+    public boolean validarSenha(String senhaCriptografada, Pessoa pessoa) {
+        return passwordEncoder.matches(senhaCriptografada, pessoa.getSenha());
+    }
+
 
 
 }

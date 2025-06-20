@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 
 import br.com.ludibox.exception.LudiBoxException;
@@ -21,12 +18,14 @@ import br.com.ludibox.exception.LudiBoxException;
 @Service
 public class JwtService {
 	private final JwtEncoder jwtEncoder;
+	private final JwtDecoder jwtDecoder;
 
 	@Autowired
 	PessoaRepository pessoaRepository;
 
-	public JwtService(JwtEncoder jwtEncoder) {
+	public JwtService(JwtEncoder jwtEncoder, JwtDecoder jwtDecoder) {
 		this.jwtEncoder = jwtEncoder;
+		this.jwtDecoder = jwtDecoder;
 	}
 
 	public String getGenerateTokenPessoa(Authentication authentication) throws LudiBoxException {
@@ -68,4 +67,42 @@ public class JwtService {
 				JwtEncoderParameters.from(claims)).getTokenValue();
 
 	}
+
+	public String gerarTokenTemporario(String email) {
+		Pessoa pessoa = pessoaRepository.findByEmail(email)
+				.orElseThrow(() -> new LudiBoxException("Erro", "Usuário não encontrado", HttpStatus.BAD_REQUEST));
+
+
+		Instant now = Instant.now();
+		long validadeCurtaSegundos = 300L; // 5 minutos
+
+		JwtClaimsSet claims = JwtClaimsSet.builder()
+				.issuer("ludibox")
+				.issuedAt(now)
+				.expiresAt(now.plusSeconds(validadeCurtaSegundos))
+				.subject(email)
+				.claim("tipo", "2fa_temp")
+				.build();
+
+		return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+	}
+
+	public String validarTokenTemporario(String token) throws LudiBoxException {
+		try {
+			Jwt jwt = jwtDecoder.decode(token);
+
+			if (!"2fa_temp".equals(jwt.getClaimAsString("tipo"))) {
+				throw new LudiBoxException("Erro", "Token inválido para 2FA", HttpStatus.UNAUTHORIZED);
+			}
+
+			return jwt.getSubject(); // que é o email
+		} catch (JwtException e) {
+			throw new LudiBoxException("Erro", "Token expirado ou inválido", HttpStatus.UNAUTHORIZED);
+		}
+	}
+
+
+
+
+
 }

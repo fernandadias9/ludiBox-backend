@@ -17,6 +17,7 @@ import br.com.ludibox.model.enums.EnumPerfil;
 import jakarta.validation.Valid;
 
 import java.util.Date;
+import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/auth")
@@ -32,28 +33,57 @@ public class AuthenticationController {
 	private GoogleAuthenticatorService googleAuthenticatorService;
 
 
-	@PostMapping("/authenticatePessoa")
-	public String authenticatePessoa(
-			Authentication authentication,
-			@RequestParam(value = "code", required = false) String codeFromUser
+	@PostMapping("/login")
+	public ResponseEntity<?> login(
+			@RequestParam String email,
+			@RequestParam String senha
 	) throws LudiBoxException {
+		Pessoa pessoa = pessoaService.buscarPorEmail(email);
 
-		Pessoa pessoa = pessoaService.buscarPorEmail(authentication.getName());
-
-		if (pessoa.isTwoFactorEnabled() && pessoa.isTwoFactorConfirmed()) {
-			if (codeFromUser == null || codeFromUser.isEmpty()) {
-				throw new LudiBoxException("Erro", "Código TOTP é obrigatório.", HttpStatus.UNAUTHORIZED);
-			}
-
-			boolean isValid = googleAuthenticatorService.isCodeValid(pessoa.getSecretTotp(), codeFromUser);
-
-			if (!isValid) {
-				throw new LudiBoxException("Erro", "Código TOTP inválido.", HttpStatus.UNAUTHORIZED);
-			}
+		if (!pessoaService.validarSenha(senha, pessoa)) {
+			throw new LudiBoxException("Erro", "Credenciais inválidas", HttpStatus.UNAUTHORIZED);
 		}
 
-		return authenticationService.authenticatePessoa(authentication);
+		if (pessoa.isTwoFactorEnabled() && pessoa.isTwoFactorConfirmed()) {
+			String tokenTemporario = authenticationService.gerarTokenTemporario(email);
+			return ResponseEntity.ok().body(
+					Map.of("twoFactorRequired", true, "tempToken", tokenTemporario)
+			);
+		}
+
+		// Senha válida e sem 2FA: gera JWT direto
+		Authentication authentication = authenticationService.autenticarComEmail(email);
+		String jwt = authenticationService.authenticatePessoa(authentication);
+		return ResponseEntity.ok().body(Map.of("jwt", jwt));
 	}
+
+	@PostMapping("/2fa/confirm")
+	public ResponseEntity<?> confirmarTotp(
+			@RequestParam String tempToken,
+			@RequestParam String code
+	) throws LudiBoxException {
+
+		String email = authenticationService.validarTokenTemporario(tempToken);
+		Pessoa pessoa = pessoaService.buscarPorEmail(email);
+
+		if (!pessoa.isTwoFactorEnabled() || !pessoa.isTwoFactorConfirmed()) {
+			throw new LudiBoxException("Erro", "2FA não está habilitado para essa conta", HttpStatus.BAD_REQUEST);
+		}
+
+		boolean isValid = googleAuthenticatorService.isCodeValid(pessoa.getSecretTotp(), code);
+		if (!isValid) {
+			throw new LudiBoxException("Erro", "Código TOTP inválido ou expirado", HttpStatus.UNAUTHORIZED);
+		}
+
+		// Aqui você deve autenticar o usuário com Spring Security
+		Authentication authentication = authenticationService.autenticarComEmail(pessoa.getEmail());
+		String jwt = authenticationService.authenticatePessoa(authentication);
+
+		return ResponseEntity.ok().body(Map.of("jwt", jwt));
+	}
+
+
+
 
 
 
