@@ -1,5 +1,6 @@
 package br.com.ludibox.service;
 
+import br.com.ludibox.auth.AuthenticationService;
 import br.com.ludibox.model.entity.*;
 import br.com.ludibox.model.enums.StatusLocacao;
 import br.com.ludibox.model.repository.*;
@@ -33,6 +34,9 @@ public class LocacaoService {
 
     @Autowired
     private EnderecoRepository enderecoRepository;
+
+    @Autowired
+    private AuthenticationService authenticationService;
 
     public Locacao abrirNovaLocacao(Locacao locacao) {
         Optional<Locacao> locacaoExistente = this.buscarLocacaoPendentePorUsuarioId(locacao.getLocador().getId());
@@ -271,8 +275,9 @@ public class LocacaoService {
         return locacoes;
     }
 
-    public List<Locacao> obterLocacoesEfetuadas(Integer usuarioId) {
-        return locacaoRepository.findLocacoesEfetuadas(usuarioId);
+    public List<ProdutoLocacao> obterLocacoesEfetuadas() {
+        Pessoa pessoaAutenticada = authenticationService.getPessoaAutenticada();
+        return produtoLocacaoRepository.findByLocador(pessoaAutenticada);
     }
 
     public Locacao atualizarStatus(Integer idLocacao, String statusRecebido) {

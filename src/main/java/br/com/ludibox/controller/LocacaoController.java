@@ -104,9 +104,9 @@ public class LocacaoController {
     }
 
     @GetMapping("/efetuadas/{usuarioId}")
-    public ResponseEntity<List<Locacao>> listarLocacoesEfetuadas(@PathVariable Integer usuarioId) {
-        List<Locacao> locacoes = locacaoService.obterLocacoesEfetuadas(usuarioId);
-        return ResponseEntity.ok(locacoes);
+    public ResponseEntity<List<ProdutoLocacao>> listarLocacoesEfetuadas(@PathVariable Integer usuarioId) {
+        List<ProdutoLocacao> produtos = locacaoService.obterLocacoesEfetuadas();
+        return ResponseEntity.ok(produtos);
     }
 
     @PutMapping("/status/{locacaoId}")
