@@ -238,5 +238,14 @@ public class PessoaService {
         });
     }
 
+    public List<Pessoa> buscarAdministradores() throws LudiBoxException {
+        List<Pessoa> administradores = pessoaRepository.findByPerfil(EnumPerfil.ADMINISTRADOR);
+
+        if (administradores.isEmpty()) {
+            throw new LudiBoxException("Nenhum administrador encontrado", "Sem administradores cadastrados", HttpStatus.NOT_FOUND);
+        }
+
+        return administradores;
+    }
 
 }
