@@ -27,7 +27,7 @@ public class AvaliacaoService {
     PessoaRepository pessoaRepository;
 
     @Transactional
-    public Avaliacao salvar(Integer produtoLocacaoId, Integer avaliadorId, int estrelas) {
+    public Avaliacao salvar(Integer produtoLocacaoId, Integer avaliadorId, int estrelas, String comentario) {
         ProdutoLocacao pl = produtoLocacaoRepository.findById(produtoLocacaoId)
                 .orElseThrow(() -> new LudiBoxException("produtoLocacaoId", "ProdutoLocacao não encontrado", HttpStatus.NOT_FOUND));
 
@@ -49,10 +49,10 @@ public class AvaliacaoService {
 
         Avaliacao aval = new Avaliacao();
         aval.setEstrelas(estrelas);
+        aval.setComentario(comentario);
         aval.setProdutoLocacao(pl);
         aval.setAvaliador(avaliador);
 
-        // marca como avaliado
         pl.setAvaliado(true);
         produtoLocacaoRepository.save(pl);
 

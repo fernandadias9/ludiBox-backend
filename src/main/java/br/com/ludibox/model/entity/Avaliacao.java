@@ -27,6 +27,9 @@ public class Avaliacao {
     @JoinColumn(name = "avaliador_id")
     private Pessoa avaliador;
 
+    @Column(length = 300)
+    private String comentario;
+
     private LocalDate dataAvaliacao = LocalDate.now();
 
     @NotNull
