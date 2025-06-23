@@ -106,4 +106,21 @@ public class LocacaoController {
         List<Locacao> locacoes = locacaoService.obterLocacoesEfetuadas(usuarioId);
         return ResponseEntity.ok(locacoes);
     }
+
+    @GetMapping("/listarTodasLocacoes")
+    public ResponseEntity<List<Locacao>> listarTodasAsLocacoes() {
+        List<Locacao> locacoes = locacaoService.obterTodasAsLocacoes();
+        return ResponseEntity.ok(locacoes);
+    }
+
+    @GetMapping("/filtrarTodasLocacoes")
+    public ResponseEntity<List<Locacao>> filtrarTodasLocacoes(
+            @RequestParam(required = false) String dataInicio,
+            @RequestParam(required = false) String dataFim,
+            @RequestParam(required = false) Double valorMin,
+            @RequestParam(required = false) Double valorMax) {
+
+        List<Locacao> locacoes = locacaoService.filtrarLocacoes(dataInicio, dataFim, valorMin, valorMax);
+        return ResponseEntity.ok(locacoes);
+    }
 }
