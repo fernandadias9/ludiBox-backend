@@ -290,4 +290,38 @@ public class LocacaoService {
 
         return locacaoRepository.save(locacao);
     }
+
+    public List<Locacao> obterTodasAsLocacoes() {
+        return locacaoRepository.findAll();
+    }
+
+    public List<Locacao> filtrarLocacoes(String dataInicio, String dataFim, Double valorMin, Double valorMax) {
+        List<Locacao> todas = locacaoRepository.findAll();
+
+        return todas.stream()
+                .filter(loc -> {
+                    boolean dentroPeriodo = true;
+                    boolean dentroValor = true;
+
+                    if (dataInicio != null) {
+                        LocalDate inicioDate = LocalDate.parse(dataInicio);
+                        LocalDateTime inicio = inicioDate.atStartOfDay();
+                        dentroPeriodo &= loc.getDataHoraEfetuada() != null && !loc.getDataHoraEfetuada().isBefore(inicio);
+                    }
+                    if (dataFim != null) {
+                        LocalDate fimDate = LocalDate.parse(dataFim);
+                        LocalDateTime fim = fimDate.atTime(23, 59, 59);
+                        dentroPeriodo &= loc.getDataHoraEfetuada() != null && !loc.getDataHoraEfetuada().isAfter(fim);
+                    }
+                    if (valorMin != null) {
+                        dentroValor &= loc.getValorTotal() != null && loc.getValorTotal() >= valorMin;
+                    }
+                    if (valorMax != null) {
+                        dentroValor &= loc.getValorTotal() != null && loc.getValorTotal() <= valorMax;
+                    }
+
+                    return dentroPeriodo && dentroValor;
+                })
+                .toList();
+    }
 }

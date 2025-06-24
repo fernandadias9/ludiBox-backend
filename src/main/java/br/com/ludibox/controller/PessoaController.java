@@ -92,6 +92,11 @@ public class PessoaController {
         return pessoas;
     }
 
+    @GetMapping("/buscarAdministradores")
+    public List<Pessoa> buscarAdministradores() throws LudiBoxException {
+        return pessoaService.buscarAdministradores();
+    }
+
     @GetMapping("/buscar_perfil/{id}")
     public PerfilDTO buscarPerfilPorId(@PathVariable int id) {
         PerfilDTO perfil = pessoaService.buscarPerfilPorId(id);

@@ -1,6 +1,7 @@
 package br.com.ludibox.model.repository;
 
 import br.com.ludibox.model.entity.Pessoa;
+import br.com.ludibox.model.enums.EnumPerfil;
 import br.com.ludibox.model.enums.EnumStatus;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,5 +32,5 @@ public interface PessoaRepository extends
                          @Param("email") String email,
                          @Param("documento") String documento);
 
-
+    List<Pessoa> findByPerfil(EnumPerfil perfil);
 }
