@@ -36,6 +36,9 @@ public class ProdutoLocacao {
     @PositiveOrZero
     private Double valorDiario;
 
+    @NotNull
+    private Boolean avaliado = false;
+
     public long getDiasLocados() {
         return ChronoUnit.DAYS.between(dataInicio, dataFim) + 1;
     }

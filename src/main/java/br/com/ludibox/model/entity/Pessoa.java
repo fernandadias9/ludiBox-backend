@@ -110,7 +110,6 @@ public class Pessoa implements UserDetails {
         return list;
     }
 
-
     @Override
     public String getPassword() {
         return this.senha;
@@ -125,6 +124,4 @@ public class Pessoa implements UserDetails {
     public boolean isEnabled() {
         return Boolean.TRUE.equals(this.situacao);
     }
-
-
 }
