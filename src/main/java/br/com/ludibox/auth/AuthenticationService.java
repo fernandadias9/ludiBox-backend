@@ -24,39 +24,24 @@ public class AuthenticationService {
 		this.jwtService = jwtService;
 	}
 
-	/**
-	 * Gera o JWT principal para a pessoa autenticada
-	 */
 	public String authenticatePessoa(Authentication authentication) throws LudiBoxException {
 		return jwtService.getGenerateTokenPessoa(authentication);
 	}
 
-	/**
-	 * Gera um token temporário para 2FA
-	 */
 	public String gerarTokenTemporario(String email) {
 		return jwtService.gerarTokenTemporario(email);
 	}
 
-	/**
-	 * Valida o token temporário (2FA) e retorna o email contido nele
-	 */
 	public String validarTokenTemporario(String token) throws LudiBoxException {
 		return jwtService.validarTokenTemporario(token);
 	}
 
-	/**
-	 * Cria um Authentication (UsernamePasswordAuthenticationToken) com base no email da pessoa
-	 */
 	public Authentication autenticarComEmail(String email) {
 		Pessoa pessoa = pessoaRepository.findByEmail(email)
 				.orElseThrow(() -> new LudiBoxException("Erro: ", "Usuário não encontrado: " + email, HttpStatus.NOT_FOUND));
 		return new UsernamePasswordAuthenticationToken(pessoa, null, pessoa.getAuthorities());
 	}
 
-	/**
-	 * Recupera o objeto Pessoa do usuário atualmente autenticado com base no ID do JWT
-	 */
 	public Pessoa getPessoaAutenticada() throws LudiBoxException {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -81,9 +66,6 @@ public class AuthenticationService {
 		throw new LudiBoxException("Erro: ", "Tipo inesperado de principal: " + principal.getClass(), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
-	/**
-	 * Valida se o usuário autenticado tem perfil de administrador
-	 */
 	public void verificarPermissaoAdmin() {
 		Pessoa pessoaAutenticada = getPessoaAutenticada();
 		if (pessoaAutenticada.getPerfil() == EnumPerfil.USUARIO) {

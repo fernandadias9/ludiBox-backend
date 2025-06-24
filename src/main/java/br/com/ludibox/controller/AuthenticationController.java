@@ -35,11 +35,6 @@ public class AuthenticationController {
 	@Autowired
 	private GoogleAuthenticatorService googleAuthenticatorService;
 
-	/**
-	 * Login unificado com suporte a 2FA via TOTP.
-	 * Se 2FA estiver ativo, retorna um token temporário e sinaliza necessidade do código.
-	 * Caso contrário, retorna JWT direto.
-	 */
 	@PostMapping("/login")
 	public ResponseEntity<?> login(@RequestBody @Valid LoginRequestDTO request) throws LudiBoxException {
 		Pessoa pessoa = pessoaService.buscarPorEmail(request.getUsername());
@@ -64,9 +59,6 @@ public class AuthenticationController {
 		return ResponseEntity.ok(new AuthResponseDTO(jwt));
 	}
 
-	/**
-	 * Confirma o código TOTP e retorna JWT após validação bem-sucedida.
-	 */
 	@PostMapping("/2fa/confirm")
 	public ResponseEntity<?> confirmarTotp(
 			@RequestParam String tempToken,
