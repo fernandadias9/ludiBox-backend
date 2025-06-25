@@ -1,5 +1,6 @@
 package br.com.ludibox.model.dto;
 
+import jakarta.persistence.Column;
 import lombok.Data;
 
 @Data
@@ -11,4 +12,8 @@ public class PerfilDTO {
     private String telefone;
     private String senha;
     private String valorDocumento;
+    private boolean twoFactorEnabled;
+    private boolean twoFactorConfirmed;
+
+
 }

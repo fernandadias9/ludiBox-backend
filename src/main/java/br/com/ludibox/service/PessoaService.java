@@ -38,6 +38,9 @@ public class PessoaService {
     @Autowired
     private RSAPasswordEncoder passwordRsa;
 
+    @Autowired
+    private GoogleAuthenticatorService googleAuthenticatorService;
+
     public void salvarImagemPessoa(MultipartFile imagem, Integer idPessoa) throws LudiBoxException {
 
         Pessoa pessoaComImagem = pessoaRepository.
@@ -52,11 +55,18 @@ public class PessoaService {
         verificarPessoaExistente(pessoa);
         pessoa.setTelefone(validarTelefone(pessoa.getTelefone()));
         pessoa.setEmail(validarEmail(pessoa.getEmail()));
+
         String senhaCifrada = passwordEncoder.encode(pessoa.getSenha());
         pessoa.setSenha(senhaCifrada);
 
+        String secret = googleAuthenticatorService.generateSecretBase32();
+        pessoa.setSecretTotp(secret);
+
+//        pessoa.setSituacao(false);
+
         return pessoaRepository.save(pessoa);
     }
+
 
     private String validarTelefone(String telefone) {
         if (telefone == null || telefone.isBlank()) {
@@ -224,6 +234,10 @@ public class PessoaService {
         perfil.setSenha(passwordRsa.decode(pessoa.getPassword()));
         perfil.setTelefone(pessoa.getTelefone());
         perfil.setValorDocumento(pessoa.getValorDocumento());
+        perfil.setTwoFactorEnabled(pessoa.isTwoFactorEnabled());
+        perfil.setTwoFactorConfirmed(pessoa.isTwoFactorConfirmed());
+
+
 
         return perfil;
     }
@@ -247,5 +261,16 @@ public class PessoaService {
 
         return administradores;
     }
+
+    public Pessoa buscarPorEmail(String email) {
+        return pessoaRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Pessoa não encontrada com email: " + email));
+    }
+
+    public boolean validarSenha(String senhaCriptografada, Pessoa pessoa) {
+        return passwordEncoder.matches(senhaCriptografada, pessoa.getSenha());
+    }
+
+
 
 }
