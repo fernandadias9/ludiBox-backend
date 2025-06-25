@@ -176,6 +176,28 @@
 							<goal>report</goal>
 						</goals>
 						<phase>verify</phase>
+						<configuration>
+							<!-- Diretório de saída do relatório -->
+							<outputDirectory>${project.build.directory}/jacoco-report</outputDirectory>
+
+							<!-- Formatos desejados -->
+							<formats>
+								<format>HTML</format>
+							</formats>
+
+							<rules>
+								<rule>
+									<element>METHOD</element>
+									<limits>
+										<limit>
+											<counter>METHOD</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>0.70</minimum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
