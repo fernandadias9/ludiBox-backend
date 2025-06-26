@@ -79,7 +79,6 @@ class ProdutoServiceTest {
         produto.setDataCadastro(LocalDate.from(LocalDateTime.now()));
     }
 
-    // TESTES PARA MÉTODO SALVAR
     @Test
     void testSalvarProdutoComImagemValida() throws Exception {
         Produto produto = new Produto();
@@ -148,7 +147,6 @@ class ProdutoServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, exception.getHttpStatus());
     }
 
-    // TESTES PARA MÉTODO ATUALIZAR
     @Test
     void testAtualizarProdutoComSucesso() throws Exception {
         Produto produtoAtualizado = new Produto();
@@ -257,7 +255,6 @@ class ProdutoServiceTest {
         assertTrue(exception.getMessage().contains("Tamanho máximo da imagem excedido"));
     }
 
-    // TESTES PARA MÉTODO ATUALIZAR STATUS
     @Test
     void testAtualizarStatusComSucesso() throws Exception {
         when(authService.getPessoaAutenticada()).thenReturn(pessoaUsuario);
@@ -295,7 +292,6 @@ class ProdutoServiceTest {
         assertEquals("Apenas o anunciante pode ativar/desativar o anúncio.", exception.getMessage());
     }
 
-    // TESTES PARA MÉTODO ATUALIZAR BLOQUEIO
     @Test
     void testAtualizarBloqueioDesbloqueandoProduto() throws Exception {
         produto.setStatus(StatusProduto.BLOQUEADO);
@@ -328,7 +324,6 @@ class ProdutoServiceTest {
         assertThrows(LudiBoxException.class, () -> produtoService.atualizarBloqueio(1));
     }
 
-    // TESTES PARA MÉTODO DELETAR PRODUTO
     @Test
     void testDeletarProdutoComSucesso() throws Exception {
         when(authService.getPessoaAutenticada()).thenReturn(pessoaUsuario);
@@ -364,7 +359,6 @@ class ProdutoServiceTest {
         verify(produtoRepository).delete(produto);
     }
 
-    // TESTES PARA MÉTODO BUSCAR TODOS
     @Test
     void testBuscarTodosComProdutosAtivos() {
         Produto produto1 = new Produto();
@@ -409,7 +403,6 @@ class ProdutoServiceTest {
         assertEquals(0, resultado.size()); // Filtro exclui produtos ATIVO
     }
 
-    // TESTES PARA MÉTODO BUSCAR
     @Test
     void testBuscarProdutoDetalhe() {
         produto.setAltura(10);
