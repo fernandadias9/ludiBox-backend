@@ -182,4 +182,75 @@ class DenunciaControllerTest {
         verifyNoInteractions(produtoRepository);
         verifyNoInteractions(emailService);
     }
+
+    @Test
+    void filtrar_deveRetornarListaComProdutoNuloEAnuncianteNulo() throws Exception {
+        // Denúncia com produto null
+        Denuncia denunciaProdutoNulo = new Denuncia();
+        denunciaProdutoNulo.setId(2);
+        denunciaProdutoNulo.setMotivo(EnumMotivoDenuncia.CONTEUDO_INDEVIDO);
+        denunciaProdutoNulo.setDescricao("Denúncia sem produto");
+        denunciaProdutoNulo.setStatus(EnumStatusDenuncia.NOVO);
+        denunciaProdutoNulo.setDataCriacao(LocalDateTime.now());
+        denunciaProdutoNulo.setProduto(null);
+        denunciaProdutoNulo.setDenunciante(null);
+
+        // Denúncia com produto presente, mas anunciante null
+        Produto produtoSemAnunciante = new Produto();
+        produtoSemAnunciante.setId(200);
+        produtoSemAnunciante.setNome("Produto Sem Anunciante");
+        produtoSemAnunciante.setAnunciante(null);
+
+        Denuncia denunciaAnuncianteNulo = new Denuncia();
+        denunciaAnuncianteNulo.setId(3);
+        denunciaAnuncianteNulo.setMotivo(EnumMotivoDenuncia.PRECO_ABUSIVO);
+        denunciaAnuncianteNulo.setDescricao("Denúncia com produto sem anunciante");
+        denunciaAnuncianteNulo.setStatus(EnumStatusDenuncia.NOVO);
+        denunciaAnuncianteNulo.setDataCriacao(LocalDateTime.now());
+        denunciaAnuncianteNulo.setProduto(produtoSemAnunciante);
+        denunciaAnuncianteNulo.setDenunciante(null);
+
+        when(denunciaRepository.buscarComFiltros(
+                nullable(LocalDateTime.class),
+                nullable(LocalDateTime.class),
+                nullable(EnumMotivoDenuncia.class),
+                nullable(EnumStatusDenuncia.class)
+        )).thenReturn(List.of(denunciaProdutoNulo, denunciaAnuncianteNulo));
+
+        mockMvc.perform(get("/denuncias/filtro"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].produtoId").doesNotExist())
+                .andExpect(jsonPath("$[0].nomeDenunciado").doesNotExist())
+                .andExpect(jsonPath("$[1].produtoId").value(produtoSemAnunciante.getId()))
+                .andExpect(jsonPath("$[1].nomeDenunciado").doesNotExist());
+    }
+
+    @Test
+    void bloquear_naoDeveEnviarEmailSeEmailOuNomeProdutoNull() throws Exception {
+        // Cenário 1: produto com anunciante nulo (email null)
+        produto.setAnunciante(null);
+
+        when(denunciaRepository.findById(denuncia.getId())).thenReturn(Optional.of(denuncia));
+        when(produtoRepository.save(produto)).thenReturn(produto);
+        when(denunciaRepository.save(denuncia)).thenReturn(denuncia);
+
+        mockMvc.perform(put("/denuncias/{id}/bloquear", denuncia.getId()))
+                .andExpect(status().isOk());
+
+        verify(produtoRepository).save(produto);
+        verify(denunciaRepository).save(denuncia);
+
+        // Garantir que emailService não é chamado porque email é null
+        verify(emailService, never()).enviarAnuncioBloqueado(anyString(), anyString());
+
+        // Cenário 2: produto com nome null
+        produto.setAnunciante(anunciante);
+        produto.setNome(null);
+
+        mockMvc.perform(put("/denuncias/{id}/bloquear", denuncia.getId()))
+                .andExpect(status().isOk());
+
+        verify(emailService, never()).enviarAnuncioBloqueado(anyString(), anyString());
+    }
+
 }
