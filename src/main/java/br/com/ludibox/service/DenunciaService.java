@@ -11,6 +11,7 @@ import br.com.ludibox.model.repository.ProdutoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -38,5 +39,15 @@ public class DenunciaService {
         denuncia.setDataCriacao(LocalDateTime.now());
 
         return denunciaRepository.save(denuncia);
+    }
+
+    public long contarDenunciasNoMesAtual() {
+        LocalDate primeiroDia = LocalDate.now().withDayOfMonth(1);
+        LocalDate ultimoDia = primeiroDia.plusMonths(1).minusDays(1);
+
+        LocalDateTime inicio = primeiroDia.atStartOfDay();
+        LocalDateTime fim = ultimoDia.atTime(23, 59, 59);
+
+        return denunciaRepository.contarDenunciasNoMesAtual(inicio, fim);
     }
 }

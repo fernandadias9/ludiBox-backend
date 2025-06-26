@@ -354,4 +354,21 @@ public class LocacaoService {
 
         return listaDTO;
     }
+
+    public long contarLocacoesNoMesAtual() {
+        LocalDate primeiroDiaDoMes = LocalDate.now().withDayOfMonth(1);
+        LocalDate ultimoDiaDoMes = primeiroDiaDoMes.plusMonths(1).minusDays(1);
+        return locacaoRepository.contarLocacoesNoMesAtual(
+                primeiroDiaDoMes.atStartOfDay(),
+                ultimoDiaDoMes.atTime(23, 59, 59)
+        );
+    }
+
+    public double calcularValorBrutoMesAtual() {
+        LocalDate primeiro = LocalDate.now().withDayOfMonth(1);
+        LocalDate ultimo  = primeiro.plusMonths(1).minusDays(1);
+        LocalDateTime inicio = primeiro.atStartOfDay();
+        LocalDateTime fim    = ultimo.atTime(23, 59, 59);
+        return locacaoRepository.somarValorBruto(inicio, fim);
+    }
 }

@@ -24,4 +24,9 @@ public interface DenunciaRepository extends JpaRepository<Denuncia, Integer> {
             @Param("status") EnumStatusDenuncia status
     );
 
+    @Query("SELECT COUNT(d) FROM Denuncia d WHERE d.dataCriacao BETWEEN :inicio AND :fim")
+    long contarDenunciasNoMesAtual(
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim
+    );
 }

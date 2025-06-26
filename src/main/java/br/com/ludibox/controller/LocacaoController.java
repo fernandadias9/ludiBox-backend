@@ -134,4 +134,16 @@ public class LocacaoController {
         List<ValorBrutoMesDTO> resultado = locacaoService.listarValorBrutoMensal(dataInicio, dataFim);
         return ResponseEntity.ok(resultado);
     }
+
+    @GetMapping("/quantidade-locacoes")
+    public ResponseEntity<Long> contarLocacoesNoMesAtual() {
+        long quantidade = locacaoService.contarLocacoesNoMesAtual();
+        return ResponseEntity.ok(quantidade);
+    }
+
+    @GetMapping("/valor-bruto-mes-atual")
+    public ResponseEntity<Double> valorBrutoMesAtual() {
+        double soma = locacaoService.calcularValorBrutoMesAtual();
+        return ResponseEntity.ok(soma);
+    }
 }

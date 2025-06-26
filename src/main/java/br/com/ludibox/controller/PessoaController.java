@@ -102,4 +102,10 @@ public class PessoaController {
         PerfilDTO perfil = pessoaService.buscarPerfilPorId(id);
         return perfil;
     }
+
+    @GetMapping("/quantidade-ativos")
+    public ResponseEntity<List<Pessoa>> buscarTodosAtivos() throws LudiBoxException {
+        List<Pessoa> pessoasAtivas = pessoaService.contarPessoasAtivas();
+        return ResponseEntity.ok(pessoasAtivas);
+    }
 }
