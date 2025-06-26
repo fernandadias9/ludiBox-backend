@@ -1,11 +1,10 @@
 package br.com.ludibox.controller;
 
-import br.com.ludibox.model.dto.AtualizacaoStatusLocacaoDTO;
 import br.com.ludibox.model.dto.LocacaoDto;
+import br.com.ludibox.model.dto.ValorBrutoMesDTO;
 import br.com.ludibox.model.entity.Locacao;
 import br.com.ludibox.model.entity.Pessoa;
 import br.com.ludibox.model.entity.ProdutoLocacao;
-import br.com.ludibox.model.enums.StatusLocacao;
 import br.com.ludibox.service.LocacaoService;
 import br.com.ludibox.service.PessoaService;
 import jakarta.validation.Valid;
@@ -14,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -104,17 +104,9 @@ public class LocacaoController {
     }
 
     @GetMapping("/efetuadas/{usuarioId}")
-    public ResponseEntity<List<ProdutoLocacao>> listarLocacoesEfetuadas(@PathVariable Integer usuarioId) {
-        List<ProdutoLocacao> produtos = locacaoService.obterLocacoesEfetuadas();
-        return ResponseEntity.ok(produtos);
-    }
-
-    @PutMapping("/status/{locacaoId}")
-    public ResponseEntity<Void> atualizarStatus(
-            @PathVariable Integer locacaoId,
-            @RequestBody String status) {
-        locacaoService.atualizarStatus(locacaoId, status);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<List<Locacao>> listarLocacoesEfetuadas(@PathVariable Integer usuarioId) {
+        List<Locacao> locacoes = locacaoService.obterLocacoesEfetuadas(usuarioId);
+        return ResponseEntity.ok(locacoes);
     }
 
     @GetMapping("/listarTodasLocacoes")
@@ -125,12 +117,21 @@ public class LocacaoController {
 
     @GetMapping("/filtrarTodasLocacoes")
     public ResponseEntity<List<Locacao>> filtrarTodasLocacoes(
-            @RequestParam(required = false) String dataInicio,
-            @RequestParam(required = false) String dataFim,
+            @RequestParam(required = false) LocalDate dataInicio,
+            @RequestParam(required = false) LocalDate dataFim,
             @RequestParam(required = false) Double valorMin,
             @RequestParam(required = false) Double valorMax) {
 
         List<Locacao> locacoes = locacaoService.filtrarLocacoes(dataInicio, dataFim, valorMin, valorMax);
         return ResponseEntity.ok(locacoes);
+    }
+
+    @GetMapping("/listarValorBruto")
+    public ResponseEntity<List<ValorBrutoMesDTO>> listarValorBrutoMensal(
+            @RequestParam String dataInicio,
+            @RequestParam String dataFim) {
+
+        List<ValorBrutoMesDTO> resultado = locacaoService.listarValorBrutoMensal(dataInicio, dataFim);
+        return ResponseEntity.ok(resultado);
     }
 }
