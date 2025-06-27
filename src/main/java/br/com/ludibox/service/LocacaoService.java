@@ -1,6 +1,7 @@
 package br.com.ludibox.service;
 
 import br.com.ludibox.auth.AuthenticationService;
+import br.com.ludibox.model.dto.ValorBrutoMesDTO;
 import br.com.ludibox.model.entity.*;
 import br.com.ludibox.model.enums.StatusLocacao;
 import br.com.ludibox.model.repository.*;
@@ -14,9 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class LocacaoService {
@@ -209,7 +208,6 @@ public class LocacaoService {
         cancelamento.setMotivo(motivoCancelamento);
         cancelamento.setMulta(multaValor);
         cancelamento.setLocacao(locacao);
-        cancelamentoRepository.save(cancelamento);
 
         locacaoRepository.save(locacao);
     }
@@ -275,6 +273,14 @@ public class LocacaoService {
         return locacoes;
     }
 
+    public List<Locacao> obterLocacoesEfetuadas(Integer usuarioId) {
+        return locacaoRepository.findLocacoesEfetuadas(usuarioId);
+    }
+
+    public List<Locacao> obterTodasAsLocacoes() {
+        return locacaoRepository.findAll();
+    }
+
     public List<ProdutoLocacao> obterLocacoesEfetuadas() {
         Pessoa pessoaAutenticada = authenticationService.getPessoaAutenticada();
         return produtoLocacaoRepository.findByLocador(pessoaAutenticada);
@@ -291,11 +297,7 @@ public class LocacaoService {
         return locacaoRepository.save(locacao);
     }
 
-    public List<Locacao> obterTodasAsLocacoes() {
-        return locacaoRepository.findAll();
-    }
-
-    public List<Locacao> filtrarLocacoes(String dataInicio, String dataFim, Double valorMin, Double valorMax) {
+    public List<Locacao> filtrarLocacoes(LocalDate dataInicio, LocalDate dataFim, Double valorMin, Double valorMax) {
         List<Locacao> todas = locacaoRepository.findAll();
 
         return todas.stream()
@@ -304,13 +306,11 @@ public class LocacaoService {
                     boolean dentroValor = true;
 
                     if (dataInicio != null) {
-                        LocalDate inicioDate = LocalDate.parse(dataInicio);
-                        LocalDateTime inicio = inicioDate.atStartOfDay();
+                        LocalDateTime inicio = dataInicio.atStartOfDay();
                         dentroPeriodo &= loc.getDataHoraEfetuada() != null && !loc.getDataHoraEfetuada().isBefore(inicio);
                     }
                     if (dataFim != null) {
-                        LocalDate fimDate = LocalDate.parse(dataFim);
-                        LocalDateTime fim = fimDate.atTime(23, 59, 59);
+                        LocalDateTime fim = dataFim.atTime(23, 59, 59);
                         dentroPeriodo &= loc.getDataHoraEfetuada() != null && !loc.getDataHoraEfetuada().isAfter(fim);
                     }
                     if (valorMin != null) {
@@ -323,5 +323,72 @@ public class LocacaoService {
                     return dentroPeriodo && dentroValor;
                 })
                 .toList();
+    }
+
+    public List<ValorBrutoMesDTO> listarValorBrutoMensal(String dataInicioStr, String dataFimStr) {
+        LocalDate dataInicio = (dataInicioStr != null && !dataInicioStr.isEmpty()) ? LocalDate.parse(dataInicioStr) : null;
+        LocalDate dataFim = (dataFimStr != null && !dataFimStr.isEmpty()) ? LocalDate.parse(dataFimStr) : null;
+
+        List<Locacao> locacoes = this.filtrarLocacoes(dataInicio, dataFim, null, null);
+
+        Map<String, Double> mapaMesValor = new HashMap<>();
+
+        for (Locacao loc : locacoes) {
+            if (loc.getDataHoraEfetuada() == null || loc.getValorTotal() == null) continue;
+
+            String mesAno = String.format("%02d/%d", loc.getDataHoraEfetuada().getMonthValue(), loc.getDataHoraEfetuada().getYear());
+
+            double valorAtual = mapaMesValor.getOrDefault(mesAno, 0.0);
+            mapaMesValor.put(mesAno, valorAtual + loc.getValorTotal());
+        }
+
+        List<ValorBrutoMesDTO> listaDTO = new ArrayList<>();
+
+        for (Map.Entry<String, Double> entry : mapaMesValor.entrySet()) {
+            ValorBrutoMesDTO dto = new ValorBrutoMesDTO();
+            dto.setMesAno(entry.getKey());
+            dto.setValor(entry.getValue());
+            listaDTO.add(dto);
+        }
+
+        listaDTO.sort((a, b) -> {
+            try {
+                String[] partsA = a.getMesAno().split("/");
+                String[] partsB = b.getMesAno().split("/");
+
+                int yearA = Integer.parseInt(partsA[1]);
+                int monthA = Integer.parseInt(partsA[0]);
+
+                int yearB = Integer.parseInt(partsB[1]);
+                int monthB = Integer.parseInt(partsB[0]);
+
+                if (yearA != yearB) {
+                    return Integer.compare(yearB, yearA);
+                } else {
+                    return Integer.compare(monthB, monthA);
+                }
+            } catch (Exception e) {
+                return b.getMesAno().compareTo(a.getMesAno());
+            }
+        });
+
+        return listaDTO;
+    }
+
+    public long contarLocacoesNoMesAtual() {
+        LocalDate primeiroDiaDoMes = LocalDate.now().withDayOfMonth(1);
+        LocalDate ultimoDiaDoMes = primeiroDiaDoMes.plusMonths(1).minusDays(1);
+        return locacaoRepository.contarLocacoesNoMesAtual(
+                primeiroDiaDoMes.atStartOfDay(),
+                ultimoDiaDoMes.atTime(23, 59, 59)
+        );
+    }
+
+    public double calcularValorBrutoMesAtual() {
+        LocalDate primeiro = LocalDate.now().withDayOfMonth(1);
+        LocalDate ultimo = primeiro.plusMonths(1).minusDays(1);
+        LocalDateTime inicio = primeiro.atStartOfDay();
+        LocalDateTime fim = ultimo.atTime(23, 59, 59);
+        return locacaoRepository.somarValorBruto(inicio, fim);
     }
 }

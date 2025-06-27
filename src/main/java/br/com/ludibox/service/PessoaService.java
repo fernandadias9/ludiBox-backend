@@ -19,6 +19,7 @@ import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class PessoaService {
@@ -271,6 +272,18 @@ public class PessoaService {
         return passwordEncoder.matches(senhaCriptografada, pessoa.getSenha());
     }
 
+    public List<Pessoa> contarPessoasAtivas() throws LudiBoxException {
+        Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
+
+        if (pessoaAutenticada.getPerfil() == EnumPerfil.USUARIO) {
+            throw new LudiBoxException("Administração: ", "Ação exclusiva para administradores!", HttpStatus.UNAUTHORIZED);
+        }
+
+        return pessoaRepository.findAll()
+                .stream()
+                .filter(pessoa -> pessoa.isSituacao())
+                .collect(Collectors.toList());
+    }
 
 
 }

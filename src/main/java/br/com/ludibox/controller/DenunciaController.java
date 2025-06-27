@@ -135,4 +135,10 @@ public class DenunciaController {
             return ResponseEntity.ok().build();
         }).orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/quantidade-denuncias")
+    public ResponseEntity<Long> quantidadeDenunciasNoMes() {
+        long total = denunciaService.contarDenunciasNoMesAtual();
+        return ResponseEntity.ok(total);
+    }
 }
