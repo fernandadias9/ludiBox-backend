@@ -36,8 +36,8 @@ public class ModeradorIAClient {
             JsonNode textNode = root.path("candidates").path(0).path("content").path("parts").path(0).path("text");
 
             String texto = limparTexto(textNode.asText());
-            JsonNode json = mapper.readTree(texto);
 
+            JsonNode json = mapper.readTree(texto);
             if (json.has("violation") && json.get("violation").asBoolean()) {
                 String mensagem = json.has("message") ? json.get("message").asText() : "Violação detectada";
                 throw new LudiBoxException(origem, mensagem, HttpStatus.UNPROCESSABLE_ENTITY);
