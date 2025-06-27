@@ -468,7 +468,7 @@ class LocacaoServiceTest {
         List<Locacao> todasLocacoes = List.of(locacao);
         when(locacaoRepository.findAll()).thenReturn(todasLocacoes);
 
-        String dataInicio = LocalDate.now().minusDays(1).toString();
+        LocalDate dataInicio = LocalDate.parse(LocalDate.now().minusDays(1).toString());
         List<Locacao> result = locacaoService.filtrarLocacoes(dataInicio, null, null, null);
 
         assertEquals(1, result.size());
@@ -483,7 +483,7 @@ class LocacaoServiceTest {
         List<Locacao> todasLocacoes = List.of(locacao);
         when(locacaoRepository.findAll()).thenReturn(todasLocacoes);
 
-        String dataFim = LocalDate.now().plusDays(1).toString();
+        LocalDate dataFim = LocalDate.parse(LocalDate.now().plusDays(1).toString());
         List<Locacao> result = locacaoService.filtrarLocacoes(null, dataFim, null, null);
 
         assertEquals(1, result.size());
@@ -526,8 +526,8 @@ class LocacaoServiceTest {
         List<Locacao> todasLocacoes = List.of(locacao);
         when(locacaoRepository.findAll()).thenReturn(todasLocacoes);
 
-        String dataInicio = LocalDate.now().minusDays(1).toString();
-        String dataFim = LocalDate.now().plusDays(1).toString();
+        LocalDate dataInicio = LocalDate.parse(LocalDate.now().minusDays(1).toString());
+        LocalDate dataFim = LocalDate.parse(LocalDate.now().plusDays(1).toString());
 
         List<Locacao> result = locacaoService.filtrarLocacoes(dataInicio, dataFim, 400.0, 600.0);
 
@@ -543,8 +543,8 @@ class LocacaoServiceTest {
         List<Locacao> todasLocacoes = List.of(locacao);
         when(locacaoRepository.findAll()).thenReturn(todasLocacoes);
 
-        String dataInicio = LocalDate.now().plusDays(1).toString(); // Data futura
-        String dataFim = LocalDate.now().plusDays(2).toString();
+        LocalDate dataInicio = LocalDate.parse(LocalDate.now().plusDays(1).toString()); // Data futura
+        LocalDate dataFim = LocalDate.parse(LocalDate.now().plusDays(2).toString());
 
         List<Locacao> result = locacaoService.filtrarLocacoes(dataInicio, dataFim, 400.0, 600.0);
 
@@ -559,7 +559,7 @@ class LocacaoServiceTest {
         List<Locacao> todasLocacoes = List.of(locacao);
         when(locacaoRepository.findAll()).thenReturn(todasLocacoes);
 
-        String dataInicio = LocalDate.now().toString();
+        LocalDate dataInicio = LocalDate.parse(LocalDate.now().toString());
         List<Locacao> result = locacaoService.filtrarLocacoes(dataInicio, null, null, null);
 
         assertTrue(result.isEmpty());
