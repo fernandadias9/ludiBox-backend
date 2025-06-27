@@ -19,15 +19,13 @@ public class RSAPasswordEncoder implements PasswordEncoder {
     @Override
     public String encode(CharSequence rawPassword) {
         try {
-            // Converter a senha bruta em bytes
+
             byte[] passwordBytes = rawPassword.toString().getBytes(StandardCharsets.UTF_8);
 
-            // Criptografar a senha com a chave pública
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
             byte[] encryptedBytes = cipher.doFinal(passwordBytes);
 
-            // Retornar o texto criptografado em Base64
             return Base64.getEncoder().encodeToString(encryptedBytes);
         } catch (Exception e) {
             throw new RuntimeException("Erro ao criptografar a senha com RSA", e);
@@ -37,15 +35,13 @@ public class RSAPasswordEncoder implements PasswordEncoder {
     @Override
     public boolean matches(CharSequence rawPassword, String encodedPassword) {
         try {
-            // Decodificar o texto criptografado em Base64
+
             byte[] encryptedBytes = Base64.getDecoder().decode(encodedPassword);
 
-            // Decifrar a senha com a chave privada
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
             byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
 
-            // Comparar a senha original com a decifrada
             String decryptedPassword = new String(decryptedBytes, StandardCharsets.UTF_8);
             return rawPassword.toString().equals(decryptedPassword);
         } catch (Exception e) {
@@ -57,15 +53,13 @@ public class RSAPasswordEncoder implements PasswordEncoder {
 
     public String decode(String encodedPassword) {
         try {
-            // Decodificar o texto criptografado em Base64
+
             byte[] encryptedBytes = Base64.getDecoder().decode(encodedPassword);
 
-            // Decifrar a senha com a chave privada
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
             byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
 
-            // Comparar a senha original com a decifrada
             String decryptedPassword = new String(decryptedBytes, StandardCharsets.UTF_8);
             return decryptedPassword;
         } catch (Exception e) {
