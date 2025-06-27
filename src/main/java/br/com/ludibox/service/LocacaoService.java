@@ -1,5 +1,6 @@
 package br.com.ludibox.service;
 
+import br.com.ludibox.auth.AuthenticationService;
 import br.com.ludibox.model.dto.ValorBrutoMesDTO;
 import br.com.ludibox.model.entity.*;
 import br.com.ludibox.model.enums.StatusLocacao;
@@ -32,6 +33,9 @@ public class LocacaoService {
 
     @Autowired
     private EnderecoRepository enderecoRepository;
+
+    @Autowired
+    private AuthenticationService authenticationService;
 
     public Locacao abrirNovaLocacao(Locacao locacao) {
         Optional<Locacao> locacaoExistente = this.buscarLocacaoPendentePorUsuarioId(locacao.getLocador().getId());
@@ -277,6 +281,22 @@ public class LocacaoService {
         return locacaoRepository.findAll();
     }
 
+    public List<ProdutoLocacao> obterLocacoesEfetuadas() {
+        Pessoa pessoaAutenticada = authenticationService.getPessoaAutenticada();
+        return produtoLocacaoRepository.findByLocador(pessoaAutenticada);
+    }
+
+    public Locacao atualizarStatus(Integer idLocacao, String statusRecebido) {
+        Locacao locacao = locacaoRepository.findById(idLocacao)
+                .orElseThrow(() -> new RuntimeException("Locação não encontrada"));
+
+        StatusLocacao statusLocacao = StatusLocacao.valueOf(statusRecebido);
+
+        locacao.setStatus(statusLocacao);
+
+        return locacaoRepository.save(locacao);
+    }
+
     public List<Locacao> filtrarLocacoes(LocalDate dataInicio, LocalDate dataFim, Double valorMin, Double valorMax) {
         List<Locacao> todas = locacaoRepository.findAll();
 
@@ -366,9 +386,9 @@ public class LocacaoService {
 
     public double calcularValorBrutoMesAtual() {
         LocalDate primeiro = LocalDate.now().withDayOfMonth(1);
-        LocalDate ultimo  = primeiro.plusMonths(1).minusDays(1);
+        LocalDate ultimo = primeiro.plusMonths(1).minusDays(1);
         LocalDateTime inicio = primeiro.atStartOfDay();
-        LocalDateTime fim    = ultimo.atTime(23, 59, 59);
+        LocalDateTime fim = ultimo.atTime(23, 59, 59);
         return locacaoRepository.somarValorBruto(inicio, fim);
     }
 }
