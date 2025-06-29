@@ -7,7 +7,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,12 +48,13 @@ public class SecurityConfig {
 		http
 		.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 		.csrf(csrf -> csrf.disable())
+		.anonymous(Customizer.withDefaults())
 		.authorizeHttpRequests(
 				//Hierarquia de permissões e bloqueios
 				auth -> auth
 				//URLs liberadas
-				.requestMatchers("/auth/*", "/public/**", "/produto/listar", "/produto/buscar/*").permitAll()
-
+				.requestMatchers("/auth/**", "/public/**", "/produto/listar", "/produto/listarComFiltro", "/produto/buscar/*", "/api/password/reset").permitAll()
+				.requestMatchers(HttpMethod.GET, "/produto/listarComFiltro").permitAll()
 				//Todas as demais são bloqueadas
 				.anyRequest().authenticated())
 		.httpBasic(Customizer.withDefaults())
@@ -63,7 +67,7 @@ public class SecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(List.of("http://localhost:4200")); // Libera a origem do Angular
+		configuration.setAllowedOrigins(List.of("http://localhost:4200", "https://ludibox-frontend.onrender.com")); // Libera a origem do Angular
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); // Métodos HTTP permitidos
 		configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Access-Control-Allow-Origin", 
 												"Access-Control-Allow-Headers","Access-Control-Expose-Headers",
@@ -96,6 +100,10 @@ public class SecurityConfig {
 	PasswordEncoder passwordEncoder(){
 		return new RSAPasswordEncoder(publicKey, privateKey);
 	}
-	
+
+	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+		return configuration.getAuthenticationManager();
+	}
 
 }

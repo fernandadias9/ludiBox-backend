@@ -1,7 +1,7 @@
 package br.com.ludibox.model.dto;
 
+import jakarta.persistence.Column;
 import lombok.Data;
-import org.springframework.context.annotation.Bean;
 
 @Data
 public class PerfilDTO {
@@ -9,4 +9,11 @@ public class PerfilDTO {
     private String nome;
     private String imagemUsuarioEmBase64;
     private String email;
+    private String telefone;
+    private String senha;
+    private String valorDocumento;
+    private boolean twoFactorEnabled;
+    private boolean twoFactorConfirmed;
+
+
 }

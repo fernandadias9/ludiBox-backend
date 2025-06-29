@@ -1,12 +1,14 @@
 package br.com.ludibox.service;
 
 import br.com.ludibox.auth.AuthenticationService;
+import br.com.ludibox.auth.RSAPasswordEncoder;
 import br.com.ludibox.exception.LudiBoxException;
 import br.com.ludibox.model.dto.PerfilDTO;
 import br.com.ludibox.model.entity.Pessoa;
 import br.com.ludibox.model.enums.EnumPerfil;
 import br.com.ludibox.model.enums.EnumStatus;
 import br.com.ludibox.model.repository.PessoaRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,8 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class PessoaService {
@@ -32,6 +36,11 @@ public class PessoaService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private RSAPasswordEncoder passwordRsa;
+
+    @Autowired
+    private GoogleAuthenticatorService googleAuthenticatorService;
 
     public void salvarImagemPessoa(MultipartFile imagem, Integer idPessoa) throws LudiBoxException {
 
@@ -46,19 +55,28 @@ public class PessoaService {
     public Pessoa salvar(Pessoa pessoa) throws LudiBoxException {
         verificarPessoaExistente(pessoa);
         pessoa.setTelefone(validarTelefone(pessoa.getTelefone()));
+        pessoa.setEmail(validarEmail(pessoa.getEmail()));
+
         String senhaCifrada = passwordEncoder.encode(pessoa.getSenha());
         pessoa.setSenha(senhaCifrada);
 
+        String secret = googleAuthenticatorService.generateSecretBase32();
+        pessoa.setSecretTotp(secret);
+
+//        pessoa.setSituacao(false);
+
         return pessoaRepository.save(pessoa);
     }
+
 
     private String validarTelefone(String telefone) {
         if (telefone == null || telefone.isBlank()) {
             throw new LudiBoxException("Telefone: ", "Número não pode estar vazio!", HttpStatus.BAD_REQUEST);
         }
-
-        telefone = telefone.replaceAll("[^0-9]", ""); // Remove caracteres não numéricos
-
+        if (!telefone.matches("^[0-9()\\s-]+$")) {
+            throw new LudiBoxException("Telefone: ", "Número contém caracteres inválidos!", HttpStatus.BAD_REQUEST);
+        }
+        telefone = telefone.replaceAll("[^0-9]", "");
         if (telefone.length() != 10 && telefone.length() != 11) {
             throw new LudiBoxException("Telefone: ", "Número inserido é inválido!", HttpStatus.BAD_REQUEST);
         }
@@ -66,20 +84,29 @@ public class PessoaService {
         return telefone;
     }
 
+    private String validarEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new LudiBoxException("Email: ", "Email não pode estar vazio!", HttpStatus.BAD_REQUEST);
+        }
+        String regex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$";
+
+        if (!email.matches(regex)) {
+            throw new LudiBoxException("Email: ", "Email inserido é inválido!", HttpStatus.BAD_REQUEST);
+        }
+
+        return email;
+    }
 
     public void verificarPessoaExistente(Pessoa pessoa) throws LudiBoxException {
-        List<Pessoa> pessoas = pessoaRepository.findAll();
+        if (pessoaRepository.findByValorDocumentoAndSituacao(pessoa.getValorDocumento(), true).isPresent()) {
+            throw new LudiBoxException("Documento: ", "Documento já cadastrado!", HttpStatus.BAD_REQUEST);
+        }
 
-        for (Pessoa pessoaValidada : pessoas) {
-            if (pessoa.getValorDocumento().equals(pessoaValidada.getValorDocumento())) {
-                throw new LudiBoxException("Documento: ", "Documento já cadastrado!", HttpStatus.BAD_REQUEST);
-            }else if (pessoa.getEmail().equals(pessoaValidada.getEmail())) {
-                throw new LudiBoxException("Email: ", "Email já cadastrado!", HttpStatus.BAD_REQUEST);
-            } else if (pessoa.getTelefone().equals(pessoaValidada.getTelefone())) {
-                throw new LudiBoxException("Telefone: ", "Telefone já cadastrado!", HttpStatus.BAD_REQUEST);
-            }
+        if (pessoaRepository.findByEmailAndSituacao(pessoa.getEmail(), true).isPresent()) {
+            throw new LudiBoxException("Email: ", "Email já cadastrado!", HttpStatus.BAD_REQUEST);
         }
     }
+
 
     public Pessoa cadastrarAdm(Pessoa pessoa) throws LudiBoxException{
         Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
@@ -110,17 +137,19 @@ public class PessoaService {
             throw new LudiBoxException("Erro: ", "Usuários só podem alterar seus próprios dados!", HttpStatus.UNAUTHORIZED);
         }
 
-
         for (Map.Entry<String, Object> entry : pessoaDetails.entrySet()) {
             try {
-                Field field = Pessoa.class.getDeclaredField(entry.getKey());  
-                field.setAccessible(true);  
-                
+                Field field = Pessoa.class.getDeclaredField(entry.getKey());
+                field.setAccessible(true);
+
                 field.set(pessoa, entry.getValue());
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 throw new LudiBoxException("Erro", "Campo inválido ou não acessível: " + entry.getKey(), HttpStatus.BAD_REQUEST);
             }
         }
+
+        pessoa.setTelefone(validarTelefone(pessoa.getTelefone()));
+        pessoa.setEmail(validarEmail(pessoa.getEmail()));
 
         return pessoaRepository.save(pessoa);
     }
@@ -130,7 +159,7 @@ public class PessoaService {
         if(!pessoaVerificada.getValorDocumento().equals(pessoa.getValorDocumento())) {
             throw new LudiBoxException("Documento: ", "O documento não pode ser alterado!", HttpStatus.BAD_REQUEST);
         }
-        if(!pessoa.getSituacao().equals(EnumStatus.ATIVO)){
+        if(!pessoa.isEnabled()){
             throw new LudiBoxException("Situação: ", "A situação não pode ser alterada!", HttpStatus.BAD_REQUEST);
         }
         if (!pessoa.getPerfil().equals(EnumPerfil.USUARIO)){
@@ -138,25 +167,43 @@ public class PessoaService {
         }
     }
 
-    public void desativarPessoa(int id) throws LudiBoxException{
+    public void excluirPessoa(int id) throws LudiBoxException {
         Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
-        Pessoa pessoa = pessoaRepository.findById(id).orElseThrow(() -> new LudiBoxException("ID: ", "Pessoa não encontrada!", HttpStatus.BAD_REQUEST));
 
-        if (pessoaAutenticada.getId() != pessoa.getId()) {
-            throw new LudiBoxException("Erro: ", "Usuários só podem alterar seus próprios dados!", HttpStatus.UNAUTHORIZED);
+        Pessoa pessoa = pessoaRepository.findById(id)
+                .orElseThrow(() -> new LudiBoxException(
+                        "Pessoa não encontrada",
+                        "Não foi possível encontrar uma pessoa com o ID: " + id,
+                        HttpStatus.BAD_REQUEST
+                ));
+
+        if (!pessoaAutenticada.getId().equals(pessoa.getId())) {
+            throw new LudiBoxException(
+                    "Acesso negado",
+                    "Usuários só podem excluir seus próprios dados.",
+                    HttpStatus.UNAUTHORIZED
+            );
         }
 
-        Pessoa pessoaDesativada = pessoaRepository.findById(pessoa.getId()).get();
-        pessoaDesativada.setSituacao(EnumStatus.INATIVO);
-        pessoaRepository.save(pessoaDesativada);
+        if (!pessoa.isEnabled()) {
+            throw new LudiBoxException(
+                    "Operação inválida",
+                    "Essa pessoa já está excluída.",
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+        pessoa.setSituacao(false);
+        pessoa.setDataDesativacao(LocalDateTime.now());
+        pessoaRepository.save(pessoa);
     }
+
 
     public void reativarPessoa(int id) throws LudiBoxException{
         Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
         Pessoa pessoa = pessoaRepository.findById(id).orElseThrow(() -> new LudiBoxException("ID: ", "Pessoa não encontrada!", HttpStatus.BAD_REQUEST));
 
         Pessoa pessoaAtivada = pessoaRepository.findById(pessoa.getId()).get();
-        pessoaAtivada.setSituacao(EnumStatus.ATIVO);
+        pessoaAtivada.setSituacao(true);
         pessoaRepository.save(pessoaAtivada);
     }
 
@@ -170,7 +217,7 @@ public class PessoaService {
         }
 
         Pessoa pessoaBloqueada = pessoaRepository.findById(pessoa.getId()).get();
-        pessoaBloqueada.setSituacao(EnumStatus.BLOQUEADO);
+        pessoaBloqueada.setSituacao(false);
         pessoaRepository.save(pessoaBloqueada);
     }
 
@@ -180,13 +227,63 @@ public class PessoaService {
 
     public PerfilDTO buscarPerfilPorId(int id){
         Pessoa pessoa = pessoaRepository.findById(id).orElseThrow(() -> new LudiBoxException("ID: ", "Usuário não encontrado!", HttpStatus.BAD_REQUEST));
-
         PerfilDTO perfil = new PerfilDTO();
         perfil.setNome(pessoa.getNome());
         perfil.setId(pessoa.getId());
         perfil.setImagemUsuarioEmBase64(pessoa.getImagemUsuarioEmBase64());
+        perfil.setEmail(pessoa.getEmail());
+        perfil.setSenha(passwordRsa.decode(pessoa.getPassword()));
+        perfil.setTelefone(pessoa.getTelefone());
+        perfil.setValorDocumento(pessoa.getValorDocumento());
+        perfil.setTwoFactorEnabled(pessoa.isTwoFactorEnabled());
+        perfil.setTwoFactorConfirmed(pessoa.isTwoFactorConfirmed());
+
+
 
         return perfil;
     }
+
+    @Transactional
+    public void anonimizarDadosPessoa(Integer pessoaId) {
+        pessoaRepository.findById(pessoaId).ifPresent(pessoa -> {
+            String novoEmail = "anonimizado_" + pessoa.getId() + "@ludibox.com";
+            String cnpjFicticio = "00000000000";
+
+            pessoaRepository.anonimizarDados(pessoaId, novoEmail, cnpjFicticio);
+        });
+    }
+
+    public List<Pessoa> buscarAdministradores() throws LudiBoxException {
+        List<Pessoa> administradores = pessoaRepository.findByPerfil(EnumPerfil.ADMINISTRADOR);
+
+        if (administradores.isEmpty()) {
+            throw new LudiBoxException("Nenhum administrador encontrado", "Sem administradores cadastrados", HttpStatus.NOT_FOUND);
+        }
+
+        return administradores;
+    }
+
+    public Pessoa buscarPorEmail(String email) {
+        return pessoaRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Pessoa não encontrada com email: " + email));
+    }
+
+    public boolean validarSenha(String senhaCriptografada, Pessoa pessoa) {
+        return passwordEncoder.matches(senhaCriptografada, pessoa.getSenha());
+    }
+
+    public List<Pessoa> contarPessoasAtivas() throws LudiBoxException {
+        Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
+
+        if (pessoaAutenticada.getPerfil() == EnumPerfil.USUARIO) {
+            throw new LudiBoxException("Administração: ", "Ação exclusiva para administradores!", HttpStatus.UNAUTHORIZED);
+        }
+
+        return pessoaRepository.findAll()
+                .stream()
+                .filter(pessoa -> pessoa.isSituacao())
+                .collect(Collectors.toList());
+    }
+
 
 }

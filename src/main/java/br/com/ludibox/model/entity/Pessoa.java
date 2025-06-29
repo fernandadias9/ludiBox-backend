@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jdk.jfr.BooleanFlag;
 import lombok.Data;
 import lombok.NonNull;
 import org.aspectj.lang.annotation.Before;
@@ -21,6 +22,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,8 +51,8 @@ public class Pessoa implements UserDetails {
     @Size(min = 5, max = 500)
     private String senha;
 
-    @Enumerated(EnumType.STRING)
-    private EnumStatus situacao;
+    @BooleanFlag
+    private boolean situacao;
 
     @Enumerated(EnumType.STRING)
     private EnumPerfil perfil;
@@ -59,7 +61,9 @@ public class Pessoa implements UserDetails {
     @Enumerated(EnumType.STRING)
     private EnumDocumento tipoDocumento;
 
-    @Column(columnDefinition = "TEXT")
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    @Column(length = 10485760)
     private String imagemUsuarioEmBase64;
 
     @NotBlank(message = "Documento é obrigatório")
@@ -67,18 +71,34 @@ public class Pessoa implements UserDetails {
     @CNPJ(groups = CnpjGroup.class)
     private String valorDocumento;
 
+    @Column(name = "secret_totp", length = 100)
+    private String secretTotp;
+
+    @Column(name = "two_factor_enabled", nullable = false)
+    private boolean twoFactorEnabled = false;
+
+    @Column(name = "two_factor_confirmed", nullable = false)
+    private boolean twoFactorConfirmed = false;
+
     @JsonBackReference
     @OneToMany(mappedBy = "pessoa")
     private List<Endereco> enderecos;
+
+    @Column(name = "dataDesativacao")
+    private LocalDateTime dataDesativacao;
+
+    @Column(name = "dataCriacao")
+    private LocalDateTime dataCriacao;
 
     @PrePersist
     protected void onCreate() {
         if (perfil == null) {
             perfil = EnumPerfil.USUARIO;
         }
-        if (situacao == null) {
-            situacao = EnumStatus.ATIVO;
-        }
+        situacao = true;
+        twoFactorEnabled = false;
+        twoFactorConfirmed = false;
+        dataCriacao = LocalDateTime.now();
     }
 
     @Override
@@ -90,19 +110,18 @@ public class Pessoa implements UserDetails {
         return list;
     }
 
-
     @Override
     public String getPassword() {
         return this.senha;
     }
-
 
     @Override
     public String getUsername() {
         return this.email;
     }
 
-
-
-
+    @Override
+    public boolean isEnabled() {
+        return Boolean.TRUE.equals(this.situacao);
+    }
 }

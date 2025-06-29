@@ -1,0 +1,165 @@
+package br.com.ludibox.controller;
+
+import br.com.ludibox.model.dto.LocacaoDto;
+import br.com.ludibox.model.dto.ValorBrutoMesDTO;
+import br.com.ludibox.model.entity.Locacao;
+import br.com.ludibox.model.entity.Pessoa;
+import br.com.ludibox.model.entity.ProdutoLocacao;
+import br.com.ludibox.model.repository.PessoaRepository;
+import br.com.ludibox.model.repository.ProdutoLocacaoRepository;
+import br.com.ludibox.service.LocacaoService;
+import br.com.ludibox.service.PessoaService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@RestController
+@RequestMapping("/locacao")
+public class LocacaoController {
+
+    @Autowired
+    private LocacaoService locacaoService;
+
+    @Autowired
+    private PessoaService pessoaService;
+
+    @Autowired
+    private PessoaRepository pessoaRepository;
+
+    @Autowired
+    private ProdutoLocacaoRepository produtoLocacaoRepository;
+
+    @PostMapping
+    public ResponseEntity<Locacao> abrirNovaLocacao(@RequestBody @Valid Locacao locacao) {
+        Locacao novaLocacao = locacaoService.abrirNovaLocacao(locacao);
+        return ResponseEntity.status(HttpStatus.CREATED).body(novaLocacao);
+    }
+
+    @PostMapping("/{id}/produtos")
+    public ResponseEntity<Locacao> incluirProdutoNaLocacao(
+            @PathVariable Integer id,
+            @RequestBody ProdutoLocacao produtoLocacao) {
+        Locacao locacaoAtualizada = locacaoService.incluirProdutoNaLocacao(id, produtoLocacao);
+        return ResponseEntity.ok(locacaoAtualizada);
+    }
+
+    @DeleteMapping("/{id}/produtos/{produtoLocacaoId}")
+    public ResponseEntity<Locacao> retirarProdutoDaLocacao(
+            @PathVariable Integer id,
+            @PathVariable Integer produtoLocacaoId) {
+        Locacao locacaoAtualizada = locacaoService.retirarProdutoDaLocacao(id, produtoLocacaoId);
+        return ResponseEntity.ok(locacaoAtualizada);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletarLocacao(@PathVariable Integer id) {
+        locacaoService.deletarLocacao(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/cancelar")
+    public ResponseEntity<String> cancelarLocacao(
+            @PathVariable Integer id,
+            @RequestParam String motivoCancelamento) {
+        try {
+            locacaoService.cancelarLocacao(id, motivoCancelamento);
+            return ResponseEntity.ok("Locação cancelada com sucesso.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/{locacaoId}/endereco-entrega/{enderecoId}")
+    public ResponseEntity<Void> escolherEnderecoEntrega(
+            @PathVariable Integer locacaoId,
+            @PathVariable Integer enderecoId,
+            @RequestParam Integer locadorId) {
+        locacaoService.escolherEnderecoEntrega(locacaoId, enderecoId, locadorId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/pendente/{usuarioId}")
+    public ResponseEntity<Locacao> buscarLocacaoPendente(@PathVariable Integer usuarioId) {
+        return locacaoService
+                .buscarLocacaoPendentePorUsuarioId(usuarioId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.ok().body(null));
+    }
+
+    @GetMapping("/{id}")
+    public Locacao buscarPorId(@PathVariable Integer id) {
+        return locacaoService.buscarPorId(id);
+    }
+
+    @PostMapping("/finalizar/{locacaoId}/{enderecoId}/{locadorId}")
+    public ResponseEntity<Void> finalizarLocacao(
+            @PathVariable Integer locacaoId,
+            @PathVariable Integer enderecoId,
+            @PathVariable Integer locadorId) {
+        locacaoService.finalizarLocacao(locacaoId, enderecoId, locadorId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/recebidas/{usuarioId}")
+    public ResponseEntity<List<ProdutoLocacao>> listarLocacoesRecebidas(@PathVariable Integer usuarioId) {
+        List<ProdutoLocacao> locacoes = locacaoService.obterLocacoesRecebidas(usuarioId);
+        return ResponseEntity.ok(locacoes);
+    }
+
+    @PutMapping("/status/{idLocacao}")
+    public ResponseEntity<Locacao> atualizarStatus(
+            @PathVariable Integer idLocacao,
+            @RequestBody String status) {
+        Locacao locacaoAtualizada = locacaoService.atualizarStatus(idLocacao, status);
+        return ResponseEntity.ok(locacaoAtualizada);
+    }
+
+    @GetMapping("/efetuadas/{usuarioId}")
+    public ResponseEntity<List<ProdutoLocacao>> obterLocacoesEfetuadas(@PathVariable Integer usuarioId) {
+        Pessoa pessoa = pessoaRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Pessoa não encontrada"));
+        List<ProdutoLocacao> locacoes = produtoLocacaoRepository.findByLocador(pessoa);
+        return ResponseEntity.ok(locacoes);
+    }
+
+    @GetMapping("/listarTodasLocacoes")
+    public ResponseEntity<List<Locacao>> listarTodasAsLocacoes() {
+        List<Locacao> locacoes = locacaoService.obterTodasAsLocacoes();
+        return ResponseEntity.ok(locacoes);
+    }
+
+    @GetMapping("/filtrarTodasLocacoes")
+    public ResponseEntity<List<Locacao>> filtrarTodasLocacoes(
+            @RequestParam(required = false) LocalDate dataInicio,
+            @RequestParam(required = false) LocalDate dataFim,
+            @RequestParam(required = false) Double valorMin,
+            @RequestParam(required = false) Double valorMax) {
+        List<Locacao> locacoes = locacaoService.filtrarLocacoes(dataInicio, dataFim, valorMin, valorMax);
+        return ResponseEntity.ok(locacoes);
+    }
+
+    @GetMapping("/listarValorBruto")
+    public ResponseEntity<List<ValorBrutoMesDTO>> listarValorBrutoMensal(
+            @RequestParam String dataInicio,
+            @RequestParam String dataFim) {
+        List<ValorBrutoMesDTO> resultado = locacaoService.listarValorBrutoMensal(dataInicio, dataFim);
+        return ResponseEntity.ok(resultado);
+    }
+
+    @GetMapping("/quantidade-locacoes")
+    public ResponseEntity<Long> contarLocacoesNoMesAtual() {
+        long quantidade = locacaoService.contarLocacoesNoMesAtual();
+        return ResponseEntity.ok(quantidade);
+    }
+
+    @GetMapping("/valor-bruto-mes-atual")
+    public ResponseEntity<Double> valorBrutoMesAtual() {
+        double soma = locacaoService.calcularValorBrutoMesAtual();
+        return ResponseEntity.ok(soma);
+    }
+}
