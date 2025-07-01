@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class AvaliacaoService {
@@ -82,5 +83,14 @@ public class AvaliacaoService {
         // soft delete
         aval.setAtivo(false);
         avaliacaoRepository.save(aval);
+    }
+
+    public List<Avaliacao> listarPorProduto(Integer produtoId) {
+        return avaliacaoRepository.findByProdutoLocacaoProdutoIdAndAtivoTrue(produtoId);
+    }
+
+    public Double obterMediaPorProduto(Integer produtoId) {
+        Double media = avaliacaoRepository.mediaPorProduto(produtoId);
+        return (media != null) ? media : 0.0;
     }
 }
