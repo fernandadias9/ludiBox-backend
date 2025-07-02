@@ -4,13 +4,14 @@ import br.com.ludibox.auth.AuthenticationService;
 import br.com.ludibox.model.dto.AvaliacaoRequestDTO;
 import br.com.ludibox.model.entity.Avaliacao;
 import br.com.ludibox.model.entity.Pessoa;
-import br.com.ludibox.service.AuthService;
 import br.com.ludibox.service.AvaliacaoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/avaliacoes")
@@ -50,5 +51,21 @@ public class AvaliacaoController {
             @AuthenticationPrincipal(expression = "id") Long avaliadorId) {
         avaliacaoService.deletar(id, avaliadorId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/produto/{produtoId}")
+    public ResponseEntity<List<Avaliacao>> listarPorProduto(
+            @PathVariable Integer produtoId) {
+        List<Avaliacao> avaliacoes = avaliacaoService.listarPorProduto(produtoId);
+        if (avaliacoes.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(avaliacoes);
+    }
+
+    @GetMapping("/produto/{produtoId}/media")
+    public ResponseEntity<Double> mediaPorProduto(@PathVariable Integer produtoId) {
+        Double media = avaliacaoService.obterMediaPorProduto(produtoId);
+        return ResponseEntity.ok(media);
     }
 }
