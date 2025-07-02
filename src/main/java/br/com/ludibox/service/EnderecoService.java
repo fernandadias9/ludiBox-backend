@@ -45,7 +45,6 @@ public class EnderecoService {
 			throw new LudiBoxException("Endereço: ", "Usuários só podem alterar seus próprios dados!", HttpStatus.BAD_REQUEST);
 		}
 
-		// Mapeamento manual com conversões adequadas
 		if (enderecoDetails.containsKey("nome")) {
 			endereco.setNome((String) enderecoDetails.get("nome"));
 		}
@@ -88,7 +87,7 @@ public class EnderecoService {
 	}
 
 	public List<Endereco> listarEnderecosPorPessoa(Integer idPessoa) {
-		return enderecoRepository.findByPessoaId(idPessoa);
+		return enderecoRepository.findByPessoaIdAndNotDeleted(idPessoa);
 	}
 
 	public void deletar(Integer idEndereco) throws LudiBoxException {
@@ -100,7 +99,12 @@ public class EnderecoService {
 			throw new LudiBoxException("Endereço: ", "Usuário não autorizado a deletar este endereço!", HttpStatus.FORBIDDEN);
 		}
 
-		enderecoRepository.delete(endereco);
+		if (endereco.isDeleted()) {
+			throw new LudiBoxException("Endereço: ", "Este endereço já foi removido!", HttpStatus.BAD_REQUEST);
+		}
+
+		endereco.delete();
+		enderecoRepository.save(endereco);
 	}
 
 	public Endereco buscarPorId(Integer id) {
