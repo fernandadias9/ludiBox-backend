@@ -1,5 +1,6 @@
 package br.com.ludibox.model.dto;
 
+import br.com.ludibox.model.entity.Endereco;
 import br.com.ludibox.model.enums.StatusProduto;
 import lombok.Data;
 
@@ -16,4 +17,5 @@ public class ProdutoListarDto {
     private String imagemAnunciante;
     private String imagem;
     private StatusProduto status;
+    private Endereco endereco;
 }
