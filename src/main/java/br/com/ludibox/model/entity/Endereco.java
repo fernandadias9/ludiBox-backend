@@ -1,23 +1,20 @@
 package br.com.ludibox.model.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
+import java.util.Date;
 
 @Data
 @Entity
 @Table
+@SQLDelete(sql = "UPDATE endereco SET deleted_at = NOW() WHERE id = ?")
+@Where(clause = "deleted_at IS NULL")
 public class Endereco {
 		
 		@Id
@@ -56,5 +53,16 @@ public class Endereco {
 		@ManyToOne
 	    @JoinColumn(name = "pessoa_id")
 	    private Pessoa pessoa;
-	}
 
+		@Column(name = "deleted_at")
+		@Temporal(TemporalType.TIMESTAMP)
+		private Date deletedAt;
+
+		public boolean isDeleted() {
+			return deletedAt != null;
+		}
+
+		public void delete() {
+			this.deletedAt = new Date();
+		}
+	}

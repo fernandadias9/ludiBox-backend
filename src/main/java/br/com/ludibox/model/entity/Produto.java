@@ -50,8 +50,8 @@ public class Produto {
 
     private StatusProduto status = StatusProduto.ATIVO;
 
-    @ManyToOne
-    @JoinColumn(name = "id_endereco")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_endereco", nullable = false)
     private Endereco endereco;
 
     @ElementCollection
