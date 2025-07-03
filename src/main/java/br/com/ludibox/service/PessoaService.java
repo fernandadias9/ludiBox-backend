@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.lang.reflect.Field;
@@ -285,5 +286,36 @@ public class PessoaService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public void atualizarAdministrador(Pessoa pessoa, Map<String, Object> administradorDetails) throws LudiBoxException {
+        List<String> camposPermitidos = List.of("nome", "email", "telefone");
 
+        administradorDetails.forEach((campo, valor) -> {
+            if (!camposPermitidos.contains(campo)) {
+                throw new LudiBoxException("Campo inválido: " + campo, "Campo inválido: " + campo, HttpStatus.BAD_REQUEST);
+            }
+            try {
+                Field field = ReflectionUtils.findField(Pessoa.class, campo);
+                if (field != null) {
+                    field.setAccessible(true);
+                    ReflectionUtils.setField(field, pessoa, valor);
+                }
+            } catch (Exception e) {
+                throw new LudiBoxException("Erro ao atualizar campo: " + campo, e.getMessage(), HttpStatus.BAD_REQUEST);
+            }
+        });
+
+        pessoaRepository.save(pessoa);
+    }
+
+    public void alterarSenhaAdm(Pessoa pessoa, String novaSenha) throws LudiBoxException {
+        String senhaCriptografada = passwordEncoder.encode(novaSenha);
+        pessoa.setSenha(senhaCriptografada);
+
+        pessoaRepository.save(pessoa);
+    }
+
+    public void excluirAdm(Pessoa pessoa) {
+        pessoaRepository.delete(pessoa);
+    }
 }
