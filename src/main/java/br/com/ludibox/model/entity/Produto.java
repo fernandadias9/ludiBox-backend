@@ -5,13 +5,18 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Data
 @Entity
+@SQLDelete(sql = "UPDATE produto SET deleted_at = NOW() WHERE id = ?")
+@Where(clause = "deleted_at IS NULL")
 public class Produto {
 
     @Id
@@ -58,4 +63,16 @@ public class Produto {
     @CollectionTable(name = "produto_imagens", joinColumns = @JoinColumn(name = "produto_id"))
     @Column(name = "imagem", length = 10485760)
     private List<String> imagens = new ArrayList<>();
+
+    @Column(name = "deleted_at")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date deletedAt;
+
+    public boolean isDeleted() {
+        return deletedAt != null;
+    }
+
+    public void delete() {
+        this.deletedAt = new Date();
+    }
 }

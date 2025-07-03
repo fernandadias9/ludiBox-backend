@@ -30,4 +30,21 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer>, JpaS
     @Query("SELECT p FROM Produto p WHERE LOWER(p.nome) LIKE LOWER(CONCAT('%', :nome, '%')) AND p.status = :status AND p.anunciante.situacao = true")
     Page<Produto> findByNomeContainingIgnoreCaseAndStatusAndAnuncianteAtivo(@Param("nome") String nome, @Param("status") StatusProduto status, Pageable pageable);
 
+    @Query("SELECT p FROM Produto p WHERE " +
+            "LOWER(p.endereco.cidade) LIKE LOWER(CONCAT('%', :cidade, '%')) AND " +
+            "p.status = :status AND p.anunciante.situacao = true")
+    Page<Produto> findByEnderecoCidadeContainingIgnoreCaseAndStatusAndAnuncianteAtivo(
+            @Param("cidade") String cidade,
+            @Param("status") StatusProduto status,
+            Pageable pageable);
+
+    @Query("SELECT p FROM Produto p WHERE " +
+            "LOWER(p.nome) LIKE LOWER(CONCAT('%', :nome, '%')) AND " +
+            "LOWER(p.endereco.cidade) LIKE LOWER(CONCAT('%', :cidade, '%')) AND " +
+            "p.status = :status AND p.anunciante.situacao = true")
+    Page<Produto> findByNomeContainingIgnoreCaseAndEnderecoCidadeContainingIgnoreCaseAndStatusAndAnuncianteAtivo(
+            @Param("nome") String nome,
+            @Param("cidade") String cidade,
+            @Param("status") StatusProduto status,
+            Pageable pageable);
 }

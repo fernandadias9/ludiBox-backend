@@ -105,11 +105,12 @@ public class ProdutoController {
     @GetMapping("/listarComFiltro")
     public ResponseEntity<Page<ProdutoListarDto>> listarTodos(
             @RequestParam(required = false) String nome,
+            @RequestParam(required = false) String cidade,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<ProdutoListarDto> produtos = produtoService.buscarComFiltro(nome, pageable);
+        Page<ProdutoListarDto> produtos = produtoService.buscarComFiltro(nome, cidade, pageable);
         return ResponseEntity.ok(produtos);
     }
 
