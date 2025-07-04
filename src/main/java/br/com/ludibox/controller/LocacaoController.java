@@ -147,7 +147,7 @@ public class LocacaoController {
     public ResponseEntity<List<ValorBrutoMesDTO>> listarValorBrutoMensal(
             @RequestParam String dataInicio,
             @RequestParam String dataFim) {
-        List<ValorBrutoMesDTO> resultado = locacaoService.listarValorBrutoMensal(dataInicio, dataFim);
+        List<ValorBrutoMesDTO> resultado = locacaoService.listarValorBrutoMensalFinalizados(dataInicio, dataFim);
         return ResponseEntity.ok(resultado);
     }
 
