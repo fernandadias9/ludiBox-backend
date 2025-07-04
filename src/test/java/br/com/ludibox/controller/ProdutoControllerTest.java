@@ -156,7 +156,7 @@ public class ProdutoControllerTest {
         dto.setId(1);
 
         Page<ProdutoListarDto> page = new PageImpl<>(List.of(dto));
-        when(produtoService.buscarComFiltro(anyString(), any(PageRequest.class))).thenReturn(page);
+        when(produtoService.buscarComFiltro(anyString(), anyString(), any(PageRequest.class))).thenReturn(page);
 
         mockMvc.perform(get("/produto/listarComFiltro")
                         .param("nome", "teste")

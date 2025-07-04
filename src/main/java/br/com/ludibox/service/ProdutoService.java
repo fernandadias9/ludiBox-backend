@@ -237,11 +237,21 @@ public class ProdutoService {
         return produtoRepository.findByAnuncianteId(pessoaId);
     }
 
-    public Page<ProdutoListarDto> buscarComFiltro(String nome, Pageable pageable) {
+    public Page<ProdutoListarDto> buscarComFiltro(String nome, String cidade, Pageable pageable) {
         Page<Produto> produtos;
 
-        if (nome != null && !nome.isBlank()) {
-            produtos = produtoRepository.findByNomeContainingIgnoreCaseAndStatusAndAnuncianteAtivo(nome, StatusProduto.ATIVO, pageable);
+        boolean hasNome = nome != null && !nome.isBlank();
+        boolean hasCidade = cidade != null && !cidade.isBlank();
+
+        if (hasNome && hasCidade) {
+            produtos = produtoRepository.findByNomeContainingIgnoreCaseAndEnderecoCidadeContainingIgnoreCaseAndStatusAndAnuncianteAtivo(
+                    nome, cidade, StatusProduto.ATIVO, pageable);
+        } else if (hasNome) {
+            produtos = produtoRepository.findByNomeContainingIgnoreCaseAndStatusAndAnuncianteAtivo(
+                    nome, StatusProduto.ATIVO, pageable);
+        } else if (hasCidade) {
+            produtos = produtoRepository.findByEnderecoCidadeContainingIgnoreCaseAndStatusAndAnuncianteAtivo(
+                    cidade, StatusProduto.ATIVO, pageable);
         } else {
             produtos = produtoRepository.findByStatusAndAnuncianteAtivo(StatusProduto.ATIVO, pageable);
         }
