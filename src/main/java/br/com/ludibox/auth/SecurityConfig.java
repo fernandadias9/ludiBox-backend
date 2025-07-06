@@ -55,8 +55,7 @@ public class SecurityConfig {
 				//Hierarquia de permissões e bloqueios
 				auth -> auth
 				//URLs liberadas
-				.requestMatchers(produtoListarComFiltroMatcher()).permitAll()
-				.requestMatchers("/auth/**", "/public/**", "/produto/listar", "/produto/buscar/*", "/api/password/reset", "/avaliacoes/produto/**").permitAll()
+				.requestMatchers("/auth/**", "/public/**",  "/produto/**", "/api/password/reset", "/avaliacoes/produto/**").permitAll()
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				//Todas as demais são bloqueadas
 				.anyRequest().authenticated())
