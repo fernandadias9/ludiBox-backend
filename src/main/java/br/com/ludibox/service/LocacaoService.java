@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class LocacaoService {
@@ -278,7 +279,7 @@ public class LocacaoService {
     }
 
     public List<Locacao> obterTodasAsLocacoes() {
-        return locacaoRepository.findAll();
+        return locacaoRepository.findAllByLocacoesFinalizadas();
     }
 
     public List<ProdutoLocacao> obterLocacoesEfetuadas() {
@@ -298,7 +299,7 @@ public class LocacaoService {
     }
 
     public List<Locacao> filtrarLocacoes(LocalDate dataInicio, LocalDate dataFim, Double valorMin, Double valorMax) {
-        List<Locacao> todas = locacaoRepository.findAll();
+        List<Locacao> todas = locacaoRepository.findAllByLocacoesFinalizadas();
 
         return todas.stream()
                 .filter(loc -> {
@@ -325,18 +326,29 @@ public class LocacaoService {
                 .toList();
     }
 
-    public List<ValorBrutoMesDTO> listarValorBrutoMensal(String dataInicioStr, String dataFimStr) {
+    public List<ValorBrutoMesDTO> listarValorBrutoMensalFinalizados(String dataInicioStr, String dataFimStr) {
         LocalDate dataInicio = (dataInicioStr != null && !dataInicioStr.isEmpty()) ? LocalDate.parse(dataInicioStr) : null;
         LocalDate dataFim = (dataFimStr != null && !dataFimStr.isEmpty()) ? LocalDate.parse(dataFimStr) : null;
 
-        List<Locacao> locacoes = this.filtrarLocacoes(dataInicio, dataFim, null, null);
+        List<Locacao> locacoes = locacaoRepository.findAllByLocacoesFinalizadas();
+
+        if (dataInicio != null && dataFim != null) {
+            locacoes = locacoes.stream()
+                    .filter(loc -> loc.getDataHoraPagamento() != null)
+                    .filter(loc -> {
+                        LocalDate dataPagamento = loc.getDataHoraPagamento().toLocalDate();
+                        return (dataPagamento.isEqual(dataInicio) || dataPagamento.isAfter(dataInicio)) &&
+                                (dataPagamento.isEqual(dataFim) || dataPagamento.isBefore(dataFim));
+                    })
+                    .collect(Collectors.toList());
+        }
 
         Map<String, Double> mapaMesValor = new HashMap<>();
 
         for (Locacao loc : locacoes) {
-            if (loc.getDataHoraEfetuada() == null || loc.getValorTotal() == null) continue;
+            if (loc.getDataHoraPagamento() == null || loc.getValorTotal() == null) continue;
 
-            String mesAno = String.format("%02d/%d", loc.getDataHoraEfetuada().getMonthValue(), loc.getDataHoraEfetuada().getYear());
+            String mesAno = String.format("%02d/%d", loc.getDataHoraPagamento().getMonthValue(), loc.getDataHoraPagamento().getYear());
 
             double valorAtual = mapaMesValor.getOrDefault(mesAno, 0.0);
             mapaMesValor.put(mesAno, valorAtual + loc.getValorTotal());
@@ -374,6 +386,7 @@ public class LocacaoService {
 
         return listaDTO;
     }
+
 
     public long contarLocacoesNoMesAtual() {
         LocalDate primeiroDiaDoMes = LocalDate.now().withDayOfMonth(1);

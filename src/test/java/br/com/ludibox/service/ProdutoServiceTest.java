@@ -472,7 +472,7 @@ class ProdutoServiceTest {
         when(produtoRepository.findByNomeContainingIgnoreCaseAndStatusAndAnuncianteAtivo(
                 "Produto", StatusProduto.ATIVO, pageable)).thenReturn(page);
 
-        Page<ProdutoListarDto> resultado = produtoService.buscarComFiltro("Produto", pageable);
+        Page<ProdutoListarDto> resultado = produtoService.buscarComFiltro("Produto", "", pageable);
 
         assertEquals(1, resultado.getTotalElements());
         assertEquals("Produto Teste", resultado.getContent().get(0).getNome());
@@ -492,7 +492,7 @@ class ProdutoServiceTest {
         when(produtoRepository.findByStatusAndAnuncianteAtivo(StatusProduto.ATIVO, pageable))
                 .thenReturn(page);
 
-        Page<ProdutoListarDto> resultado = produtoService.buscarComFiltro("", pageable);
+        Page<ProdutoListarDto> resultado = produtoService.buscarComFiltro("", "", pageable);
 
         assertEquals(1, resultado.getTotalElements());
         assertEquals("Produto Teste", resultado.getContent().get(0).getNome());
@@ -506,7 +506,7 @@ class ProdutoServiceTest {
         when(produtoRepository.findByStatusAndAnuncianteAtivo(StatusProduto.ATIVO, pageable))
                 .thenReturn(page);
 
-        Page<ProdutoListarDto> resultado = produtoService.buscarComFiltro("   ", pageable);
+        Page<ProdutoListarDto> resultado = produtoService.buscarComFiltro("   ", "", pageable);
 
         assertEquals(1, resultado.getTotalElements());
         assertEquals("Produto Teste", resultado.getContent().get(0).getNome());
@@ -521,7 +521,7 @@ class ProdutoServiceTest {
         when(produtoRepository.findByStatusAndAnuncianteAtivo(StatusProduto.ATIVO, pageable))
                 .thenReturn(page);
 
-        Page<ProdutoListarDto> resultado = produtoService.buscarComFiltro(null, pageable);
+        Page<ProdutoListarDto> resultado = produtoService.buscarComFiltro(null, "", pageable);
 
         assertEquals(1, resultado.getTotalElements());
         assertNull(resultado.getContent().get(0).getImagem());
@@ -535,7 +535,7 @@ class ProdutoServiceTest {
         when(produtoRepository.findByNomeContainingIgnoreCaseAndStatusAndAnuncianteAtivo(
                 "Inexistente", StatusProduto.ATIVO, pageable)).thenReturn(page);
 
-        Page<ProdutoListarDto> resultado = produtoService.buscarComFiltro("Inexistente", pageable);
+        Page<ProdutoListarDto> resultado = produtoService.buscarComFiltro("Inexistente", "", pageable);
 
         assertEquals(0, resultado.getTotalElements());
         assertTrue(resultado.getContent().isEmpty());

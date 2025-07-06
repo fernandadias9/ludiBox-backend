@@ -25,4 +25,7 @@ public interface LocacaoRepository extends JpaRepository<Locacao, Integer>, JpaS
 
     @Query("SELECT COALESCE(SUM(l.valorTotal),0) FROM Locacao l WHERE l.dataHoraPagamento BETWEEN :inicio AND :fim")
     double somarValorBruto( @Param("inicio") LocalDateTime inicio, @Param("fim")    LocalDateTime fim);
+
+    @Query("SELECT l FROM Locacao l WHERE l.status = 'FINALIZADO'")
+    List<Locacao> findAllByLocacoesFinalizadas();
 }

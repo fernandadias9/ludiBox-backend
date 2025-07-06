@@ -108,4 +108,56 @@ public class PessoaController {
         List<Pessoa> pessoasAtivas = pessoaService.contarPessoasAtivas();
         return ResponseEntity.ok(pessoasAtivas);
     }
+
+    @PatchMapping("/atualizarAdministrador/{id}")
+    public ResponseEntity<Pessoa> atualizarAdministrador(
+            @PathVariable int id,
+            @RequestBody Map<String, Object> administradorDetails,
+            BindingResult bindingResult) throws LudiBoxException {
+
+        Optional<Pessoa> pessoaOptional = Optional.ofNullable(pessoaService.buscarPorId(id));
+
+        if (!pessoaOptional.isPresent()) {
+            throw new LudiBoxException("Erro:", "Administrador não encontrado", HttpStatus.NOT_FOUND);
+        }
+
+        Pessoa pessoa = pessoaOptional.get();
+        pessoaService.atualizarAdministrador(pessoa, administradorDetails);
+
+        if (bindingResult.hasErrors()) {
+            throw new LudiBoxException("Erro:", "Erro de validação nos dados enviados", HttpStatus.BAD_REQUEST);
+        }
+
+        return ResponseEntity.ok(pessoa);
+    }
+
+    @PatchMapping("/alterarSenhaAdm/{id}")
+    public ResponseEntity<Void> alterarSenhaPessoa(
+            @PathVariable int id,
+            @RequestBody Map<String, String> body) throws LudiBoxException {
+
+        String novaSenha = body.get("novaSenha");
+        if (novaSenha == null || novaSenha.length() < 6) {
+            throw new LudiBoxException("Erro:", "Senha inválida", HttpStatus.BAD_REQUEST);
+        }
+
+        Pessoa pessoa = pessoaService.buscarPorId(id);
+        if (pessoa == null) {
+            throw new LudiBoxException("Erro:", "Pessoa não encontrada", HttpStatus.NOT_FOUND);
+        }
+        pessoaService.alterarSenhaAdm(pessoa, novaSenha);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/excluirAdm/{id}")
+    public ResponseEntity<Void> excluirAdministrador(@PathVariable int id) throws LudiBoxException {
+        Pessoa pessoa = pessoaService.buscarPorId(id);
+        if (pessoa == null) {
+            throw new LudiBoxException("Erro:", "Administrador não encontrado", HttpStatus.NOT_FOUND);
+        }
+
+        pessoaService.excluirAdm(pessoa);
+        return ResponseEntity.noContent().build();
+    }
 }

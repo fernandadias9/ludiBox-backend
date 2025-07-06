@@ -4,6 +4,7 @@ import br.com.ludibox.auth.AuthenticationService;
 import br.com.ludibox.exception.LudiBoxException;
 import br.com.ludibox.model.dto.ProdutoDetalheDto;
 import br.com.ludibox.model.dto.ProdutoListarDto;
+import br.com.ludibox.model.entity.Endereco;
 import br.com.ludibox.model.entity.Pessoa;
 import br.com.ludibox.model.entity.Produto;
 import br.com.ludibox.model.enums.EnumPerfil;
@@ -45,6 +46,12 @@ public class ProdutoService {
     public void salvar(@Valid Produto produto, List<MultipartFile> imagens) throws LudiBoxException, IOException {
         Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
         produto.setAnunciante(pessoaAutenticada);
+
+        List<Endereco> enderecos = pessoaAutenticada.getEnderecos();
+        if (enderecos == null || enderecos.isEmpty()) {
+            throw new LudiBoxException("Endereço", "Para cadastrar um anúncio é obrigatório ter um endereço cadastrado.", HttpStatus.BAD_REQUEST);
+        }
+        produto.setEndereco(enderecos.get(0));
 
         if (imagens != null && imagens.size() > MAX_IMAGENS) {
             throw new LudiBoxException("Imagens", "Número máximo de imagens excedido. Máximo permitido: " + MAX_IMAGENS, HttpStatus.BAD_REQUEST);
@@ -117,6 +124,12 @@ public class ProdutoService {
 
             produtoExistente.setImagens(imagensAtualizadas);
         }
+
+        List<Endereco> enderecos = pessoaAutenticada.getEnderecos();
+        if (enderecos == null || enderecos.isEmpty()) {
+            throw new LudiBoxException("Endereço", "Para cadastrar um anúncio é obrigatório ter um endereço cadastrado.", HttpStatus.BAD_REQUEST);
+        }
+        produtoExistente.setEndereco(enderecos.get(0));
 
         produtoRepository.save(produtoExistente);
     }
@@ -207,6 +220,7 @@ public class ProdutoService {
         dto.setNomeAnunciante(produto.getAnunciante().getNome());
         dto.setImagemAnunciante(produto.getAnunciante().getImagemUsuarioEmBase64());
         dto.setImagens(produto.getImagens());
+        dto.setEndereco(produto.getEndereco());
 
         return dto;
     }
@@ -223,11 +237,21 @@ public class ProdutoService {
         return produtoRepository.findByAnuncianteId(pessoaId);
     }
 
-    public Page<ProdutoListarDto> buscarComFiltro(String nome, Pageable pageable) {
+    public Page<ProdutoListarDto> buscarComFiltro(String nome, String cidade, Pageable pageable) {
         Page<Produto> produtos;
 
-        if (nome != null && !nome.isBlank()) {
-            produtos = produtoRepository.findByNomeContainingIgnoreCaseAndStatusAndAnuncianteAtivo(nome, StatusProduto.ATIVO, pageable);
+        boolean hasNome = nome != null && !nome.isBlank();
+        boolean hasCidade = cidade != null && !cidade.isBlank();
+
+        if (hasNome && hasCidade) {
+            produtos = produtoRepository.findByNomeContainingIgnoreCaseAndEnderecoCidadeContainingIgnoreCaseAndStatusAndAnuncianteAtivo(
+                    nome, cidade, StatusProduto.ATIVO, pageable);
+        } else if (hasNome) {
+            produtos = produtoRepository.findByNomeContainingIgnoreCaseAndStatusAndAnuncianteAtivo(
+                    nome, StatusProduto.ATIVO, pageable);
+        } else if (hasCidade) {
+            produtos = produtoRepository.findByEnderecoCidadeContainingIgnoreCaseAndStatusAndAnuncianteAtivo(
+                    cidade, StatusProduto.ATIVO, pageable);
         } else {
             produtos = produtoRepository.findByStatusAndAnuncianteAtivo(StatusProduto.ATIVO, pageable);
         }
@@ -241,6 +265,7 @@ public class ProdutoService {
             dto.setNomeAnunciante(produto.getAnunciante().getNome());
             dto.setImagemAnunciante(produto.getAnunciante().getImagemUsuarioEmBase64());
             dto.setImagem(produto.getImagens().isEmpty() ? null : produto.getImagens().get(0));
+            dto.setEndereco(produto.getEndereco());
             return dto;
         });
     }

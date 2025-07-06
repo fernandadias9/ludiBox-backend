@@ -39,32 +39,55 @@ public class EnderecoService {
 		return enderecoRepository.save(novo);
 	}
 
-	public Endereco atualizarEnderecoPessoa(Endereco endereco, Map<String, Object> enderecoDetails) throws LudiBoxException{
-    	Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
+	public Endereco atualizarEnderecoPessoa(Endereco endereco, Map<String, Object> enderecoDetails) throws LudiBoxException {
+		Pessoa pessoaAutenticada = authService.getPessoaAutenticada();
 		if (pessoaAutenticada.getId() != endereco.getPessoa().getId()) {
 			throw new LudiBoxException("Endereço: ", "Usuários só podem alterar seus próprios dados!", HttpStatus.BAD_REQUEST);
 		}
 
-		for (Map.Entry<String, Object> entry : enderecoDetails.entrySet()) {
-			try {
-				Field field = Endereco.class.getDeclaredField(entry.getKey());
-				field.setAccessible(true);
-
-				field.set(endereco, entry.getValue());
-			} catch (NoSuchFieldException | IllegalAccessException e) {
-				throw new LudiBoxException("Erro", "Campo inválido ou não acessível: " + entry.getKey(), HttpStatus.BAD_REQUEST);
+		if (enderecoDetails.containsKey("nome")) {
+			endereco.setNome((String) enderecoDetails.get("nome"));
+		}
+		if (enderecoDetails.containsKey("cep")) {
+			Object cepValue = enderecoDetails.get("cep");
+			endereco.setCep(cepValue instanceof Integer ? (Integer) cepValue : Integer.parseInt(cepValue.toString()));
+		}
+		if (enderecoDetails.containsKey("rua")) {
+			endereco.setRua((String) enderecoDetails.get("rua"));
+		}
+		if (enderecoDetails.containsKey("numero")) {
+			Object numeroValue = enderecoDetails.get("numero");
+			if (numeroValue == null || numeroValue.toString().isEmpty()) {
+				endereco.setNumero(null);
+			} else {
+				endereco.setNumero(numeroValue instanceof Integer ? (Integer) numeroValue : Integer.parseInt(numeroValue.toString()));
 			}
 		}
+		if (enderecoDetails.containsKey("complemento")) {
+			endereco.setComplemento((String) enderecoDetails.get("complemento"));
+		}
+		if (enderecoDetails.containsKey("bairro")) {
+			endereco.setBairro((String) enderecoDetails.get("bairro"));
+		}
+		if (enderecoDetails.containsKey("cidade")) {
+			endereco.setCidade((String) enderecoDetails.get("cidade"));
+		}
+		if (enderecoDetails.containsKey("estado")) {
+			endereco.setEstado((String) enderecoDetails.get("estado"));
+		}
+		if (enderecoDetails.containsKey("semNumero")) {
+			endereco.setSemNumero((Boolean) enderecoDetails.get("semNumero"));
+		}
 
-    	return enderecoRepository.save(endereco);
-    }
+		return enderecoRepository.save(endereco);
+	}
 
 	public Endereco buscarPorId(int id) {
 		return enderecoRepository.findById(id).orElseThrow(() -> new LudiBoxException("Endereço com ID: " + id, " Não foi encontrado", HttpStatus.BAD_REQUEST));
 	}
 
 	public List<Endereco> listarEnderecosPorPessoa(Integer idPessoa) {
-		return enderecoRepository.findByPessoaId(idPessoa);
+		return enderecoRepository.findByPessoaIdAndNotDeleted(idPessoa);
 	}
 
 	public void deletar(Integer idEndereco) throws LudiBoxException {
@@ -76,7 +99,12 @@ public class EnderecoService {
 			throw new LudiBoxException("Endereço: ", "Usuário não autorizado a deletar este endereço!", HttpStatus.FORBIDDEN);
 		}
 
-		enderecoRepository.delete(endereco);
+		if (endereco.isDeleted()) {
+			throw new LudiBoxException("Endereço: ", "Este endereço já foi removido!", HttpStatus.BAD_REQUEST);
+		}
+
+		endereco.delete();
+		enderecoRepository.save(endereco);
 	}
 
 	public Endereco buscarPorId(Integer id) {
