@@ -4,6 +4,7 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -53,7 +55,7 @@ public class SecurityConfig {
 				//Hierarquia de permissões e bloqueios
 				auth -> auth
 				//URLs liberadas
-				.requestMatchers(HttpMethod.GET, "/produto/listarComFiltro").permitAll()
+				.requestMatchers(produtoListarComFiltroMatcher()).permitAll()
 				.requestMatchers("/auth/**", "/public/**", "/produto/listar", "/produto/buscar/*", "/api/password/reset", "/avaliacoes/produto/**").permitAll()
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				//Todas as demais são bloqueadas
@@ -104,6 +106,20 @@ public class SecurityConfig {
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
 		return configuration.getAuthenticationManager();
+	}
+
+	@Bean
+	public RequestMatcher produtoListarComFiltroMatcher() {
+		return new RequestMatcher() {
+			@Override
+			public boolean matches(HttpServletRequest request) {
+				String path = request.getRequestURI();
+				String method = request.getMethod();
+
+				return "GET".equals(method) &&
+						path.equals("/produto/listarComFiltro");
+			}
+		};
 	}
 
 }
