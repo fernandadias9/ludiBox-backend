@@ -55,6 +55,7 @@ public class SecurityConfig {
 				//URLs liberadas
 				.requestMatchers(HttpMethod.GET, "/produto/listarComFiltro").permitAll()
 				.requestMatchers("/auth/**", "/public/**", "/produto/listar", "/produto/buscar/*", "/api/password/reset", "/avaliacoes/produto/**").permitAll()
+				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				//Todas as demais são bloqueadas
 				.anyRequest().authenticated())
 		.httpBasic(Customizer.withDefaults())
@@ -74,8 +75,8 @@ public class SecurityConfig {
 		));
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 		// Seja explícito sobre os cabeçalhos que você permite e expõe
-		configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "x-requested-with"));
-		configuration.setExposedHeaders(List.of("Authorization"));
+		configuration.setAllowedHeaders(List.of("*"));
+		configuration.setExposedHeaders(List.of("*"));
 		configuration.setAllowCredentials(true);
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
