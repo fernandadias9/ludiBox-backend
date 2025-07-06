@@ -67,8 +67,8 @@ public class SecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(List.of("http://localhost:4200", "https://ludibox-frontend.onrender.com")); // Libera a origem do Angular
-		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); // Métodos HTTP permitidos
+		configuration.setAllowedOrigins(List.of("http://localhost:4200", "https://ludibox-frontend.onrender.com"));
+		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 		configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Access-Control-Allow-Origin", 
 												"Access-Control-Allow-Headers","Access-Control-Expose-Headers",
 												"Accept","Origin","X-Requested-With","Access-Control-Request-Method",	
@@ -78,6 +78,7 @@ public class SecurityConfig {
 
 		configuration.setAllowCredentials(true); // Permite envio de credenciais (cookies, por exemplo)
 		configuration.setAllowedOriginPatterns(List.of("http://localhost:4200/*"));
+		configuration.setAllowedOriginPatterns(List.of("https://ludibox-frontend.onrender.com/*"));
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
