@@ -67,18 +67,16 @@ public class SecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(List.of("http://localhost:4200", "https://ludibox-frontend.onrender.com"));
+		// Use setAllowedOriginPatterns com as duas URLs corretas, sem "/*" no final
+		configuration.setAllowedOriginPatterns(List.of(
+				"http://localhost:4200",
+				"https://ludibox-frontend.onrender.com"
+		));
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-		configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Access-Control-Allow-Origin", 
-												"Access-Control-Allow-Headers","Access-Control-Expose-Headers",
-												"Accept","Origin","X-Requested-With","Access-Control-Request-Method",	
-												"Access-Control-Request-Headers", "Access-Control-Allow-Credentials",
-												"Content-Length","Content-Encoding","Connection"
-				)); // Cabeçalhos permitidos
-
-		configuration.setAllowCredentials(true); // Permite envio de credenciais (cookies, por exemplo)
-		configuration.setAllowedOriginPatterns(List.of("http://localhost:4200/*"));
-		configuration.setAllowedOriginPatterns(List.of("https://ludibox-frontend.onrender.com/*"));
+		// Seja explícito sobre os cabeçalhos que você permite e expõe
+		configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "x-requested-with"));
+		configuration.setExposedHeaders(List.of("Authorization"));
+		configuration.setAllowCredentials(true);
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
