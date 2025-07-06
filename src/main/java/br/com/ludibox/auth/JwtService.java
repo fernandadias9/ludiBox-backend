@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import br.com.ludibox.model.entity.Pessoa;
 import br.com.ludibox.model.repository.PessoaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,7 +24,7 @@ public class JwtService {
 	@Autowired
 	PessoaRepository pessoaRepository;
 
-	public JwtService(JwtEncoder jwtEncoder, JwtDecoder jwtDecoder) {
+	public JwtService(@Lazy JwtEncoder jwtEncoder, @Lazy JwtDecoder jwtDecoder) {
 		this.jwtEncoder = jwtEncoder;
 		this.jwtDecoder = jwtDecoder;
 	}
