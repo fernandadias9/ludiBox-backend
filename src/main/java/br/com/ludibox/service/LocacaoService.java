@@ -299,7 +299,7 @@ public class LocacaoService {
     }
 
     public List<Locacao> filtrarLocacoes(LocalDate dataInicio, LocalDate dataFim, Double valorMin, Double valorMax) {
-        List<Locacao> todas = locacaoRepository.findAll();
+        List<Locacao> todas = locacaoRepository.findAllByLocacoesFinalizadas();
 
         return todas.stream()
                 .filter(loc -> {
