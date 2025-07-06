@@ -56,6 +56,7 @@ public class SecurityConfig {
 				auth -> auth
 				//URLs liberadas
 				.requestMatchers("/auth/**", "/public/**",  "/produto/**", "/api/password/reset", "/avaliacoes/produto/**").permitAll()
+				.requestMatchers(produtoListarComFiltroMatcher()).permitAll()
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				//Todas as demais são bloqueadas
 				.anyRequest().authenticated())
